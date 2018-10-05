@@ -45,5 +45,13 @@ public class BinanceManualExample {
                 .subscribe(trade -> {
                     LOG.info("Trade: {}", trade);
                 });
+
+        try {
+            Thread.sleep(10000L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        exchange.disconnect().blockingAwait();
     }
 }
