@@ -5,7 +5,7 @@
     <groupId>info.bitrich.xchange-stream</groupId>
     <artifactId>xchange-stream-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.3.3-dsx-SNAPSHOT</version>
+    <version>4.3.4-dsx-SNAPSHOT</version>
 
     <modules>
         <module>xchange-stream-core</module>
@@ -61,12 +61,12 @@
 
     <distributionManagement>
         <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <id>aws-snapshot</id>
+            <url>s3://dsx-maven/snapshot/</url>
         </snapshotRepository>
         <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <id>aws-release</id>
+            <url>s3://dsx-maven/release</url>
         </repository>
     </distributionManagement>
 
@@ -143,6 +143,13 @@
                 <version>2.5.3</version>
             </plugin>
         </plugins>
+        <extensions>
+            <extension>
+                <groupId>com.gkatzioura.maven.cloud</groupId>
+                <artifactId>s3-storage-wagon</artifactId>
+                <version>1.0</version>
+            </extension>
+        </extensions>
     </build>
     <profiles>
         <profile>
