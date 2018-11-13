@@ -226,9 +226,9 @@ public abstract class NettyStreamingService<T> {
         disconnect.addListener(f -> {
             if(f.isSuccess()) {
                 isManualDisconnect = false;
+                eventLoopGroup.shutdownGracefully(2, 30, TimeUnit.SECONDS);
             }
         });
-        eventLoopGroup.shutdownGracefully(2, 30, TimeUnit.SECONDS);
         completable.onError(t);
     }
 
