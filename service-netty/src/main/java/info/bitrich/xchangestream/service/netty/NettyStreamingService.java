@@ -21,6 +21,7 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketHandshakeException;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.codec.http.websocketx.extensions.WebSocketClientExtensionHandler;
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketClientCompressionHandler;
@@ -204,7 +205,11 @@ public abstract class NettyStreamingService<T> {
                 handleError(completable, throwable);
             }
         }).doOnError(t -> {
-            LOG.warn("Problem with connection", t);
+            if (t instanceof WebSocketHandshakeException) {
+                LOG.warn("Problem with connection: {} - {}", t.getClass(), t.getMessage());
+            } else {
+                LOG.warn("Problem with connection", t);
+            }
             reconnFailEmitters.forEach(emitter -> emitter.onNext(t));
         }).retryWhen(new RetryWithDelay(retryDuration.toMillis()))
           .doOnComplete(() -> {
