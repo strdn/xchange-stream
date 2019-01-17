@@ -1,5 +1,6 @@
 package info.bitrich.xchangestream.service.netty;
 
+import info.bitrich.xchangestream.service.ConnectableService;
 import info.bitrich.xchangestream.service.exception.NotConnectedException;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -50,7 +51,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-public abstract class NettyStreamingService<T> {
+public abstract class NettyStreamingService<T> extends ConnectableService {
     private final Logger LOG = LoggerFactory.getLogger(this.getClass());
     private static final Duration DEFAULT_CONNECTION_TIMEOUT = Duration.ofSeconds(10);
     private static final Duration DEFAULT_RETRY_DURATION = Duration.ofSeconds(15);
@@ -106,19 +107,12 @@ public abstract class NettyStreamingService<T> {
         }
     }
 
-    /**
-     * Override this method in case need any pre-connection actions,
-     * like e.g. adding some throttle control for limiting too often opening connections
-     */
-    protected void beforeConnection() {
-        // not need any pre-connection actions by default
-    }
-
-    public Completable connect() {
-        beforeConnection();
+    @Override
+    protected Completable openConnection() {
         return Completable.create(completable -> {
             try {
-                LOG.info("Connecting to {}://{}:{}{}", uri.getScheme(), uri.getHost(), uri.getPort(), uri.getPath());
+
+                LOG.info("Connecting to {}", uri.toString());
                 String scheme = uri.getScheme() == null ? "ws" : uri.getScheme();
 
                 String host = uri.getHost();
@@ -163,6 +157,7 @@ public abstract class NettyStreamingService<T> {
                 eventLoopGroup = new NioEventLoopGroup(2);
                 b.group(eventLoopGroup)
                         .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, java.lang.Math.toIntExact(connectionTimeout.toMillis()))
+                        .option(ChannelOption.SO_KEEPALIVE, true)
                         .channel(NioSocketChannel.class)
                         .handler(new ChannelInitializer<SocketChannel>() {
                             @Override
@@ -189,7 +184,7 @@ public abstract class NettyStreamingService<T> {
                                 }
 
                                 handlers.add(handler);
-                                p.addLast(handlers.toArray(new ChannelHandler[handlers.size()]));
+                                p.addLast(handlers.toArray(new ChannelHandler[0]));
                             }
                         });
 
@@ -207,9 +202,7 @@ public abstract class NettyStreamingService<T> {
                         handleError(completable, future.cause());
                     }
 
-                }).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
-
-
+                });
             } catch (Exception throwable) {
                 handleError(completable, throwable);
             }
@@ -226,11 +219,7 @@ public abstract class NettyStreamingService<T> {
             LOG.warn("Resubscribing channels");
             resubscribeChannels();
 
-            connectionSuccessEmitters.forEach(emitter -> {
-                    emitter.onNext(new Object());
-                }
-            );
-
+            connectionSuccessEmitters.forEach(emitter -> emitter.onNext(new Object()));
         });
     }
 
@@ -241,6 +230,7 @@ public abstract class NettyStreamingService<T> {
             if(f.isSuccess()) {
                 isManualDisconnect = false;
             }
+            // shutdown sockets after disconnect for avoiding sockets leak
             eventLoopGroup.shutdownGracefully(2, 30, TimeUnit.SECONDS);
         });
         completable.onError(t);
@@ -307,11 +297,11 @@ public abstract class NettyStreamingService<T> {
     }
 
     public Observable<Throwable> subscribeReconnectFailure() {
-        return Observable.<Throwable>create(observableEmitter -> reconnFailEmitters.add(observableEmitter));
+        return Observable.create(reconnFailEmitters::add);
     }
 
     public Observable<Object> subscribeConnectionSuccess() {
-        return Observable.<Object>create(e -> connectionSuccessEmitters.add(e));
+        return Observable.create(connectionSuccessEmitters::add);
     }
 
     public Observable<T> subscribeChannel(String channelName, Object... args) {
