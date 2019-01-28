@@ -2,10 +2,10 @@ package info.bitrich.xchangestream.bitfinex;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import info.bitrich.xchangestream.bitfinex.dto.BitfinexAuthRequestStatus;
 import info.bitrich.xchangestream.bitfinex.dto.BitfinexWebSocketSubscriptionMessage;
 import info.bitrich.xchangestream.bitfinex.dto.BitfinexWebSocketUnSubscriptionMessage;
 import info.bitrich.xchangestream.service.netty.JsonNettyStreamingService;
+import info.bitrich.xchangestream.service.netty.StreamingObjectMapperHelper;
 import io.netty.handler.codec.http.websocketx.extensions.WebSocketClientExtensionHandler;
 import org.knowm.xchange.exceptions.ExchangeException;
 import org.slf4j.Logger;
@@ -26,7 +26,6 @@ public class BitfinexStreamingService extends JsonNettyStreamingService {
     private static final String CHANNEL_ID = "chanId";
     private static final String SUBSCRIBED = "subscribed";
     private static final String UNSUBSCRIBED = "unsubscribed";
-    private static final String ERROR_CODE = "code";
 
     private static final int SUBSCRIPTION_FAILED = 10300;
 
@@ -42,14 +41,8 @@ public class BitfinexStreamingService extends JsonNettyStreamingService {
     }
 
     @Override
-    protected void beforeConnection() {
-        BitfinexConnectionRateLimiter.openConnectionRateLimit();
-    }
-
-    @Override
     public void messageHandler(String message) {
         LOG.debug("Received message: {}", message);
-        ObjectMapper objectMapper = new ObjectMapper();
         JsonNode jsonNode;
 
         // Parse incoming message to JSON
@@ -74,38 +67,31 @@ public class BitfinexStreamingService extends JsonNettyStreamingService {
 
         JsonNode event = message.get("event");
         if (event != null) {
-            switch (event.textValue()) {
-                case INFO:
-                    JsonNode version = message.get("version");
-                    if (version != null) {
-                        LOG.debug("Bitfinex websocket API version: {}.", version.intValue());
-                    }
-                    break;
-                case SUBSCRIBED: {
-                    String channel = message.get("channel").asText();
-                    String pair = message.get("pair").asText();
-                    String channelId = message.get(CHANNEL_ID).asText();
-                    try {
-                        String subscriptionUniqueId = getSubscriptionUniqueId(channel, pair);
-                        subscribedChannels.put(channelId, subscriptionUniqueId);
-                        LOG.debug("Register channel {}: {}", subscriptionUniqueId, channelId);
-                    } catch (Exception e) {
-                        LOG.error(e.getMessage());
-                    }
-                    break;
+            if (event.textValue().equals(INFO)) {
+                JsonNode version = message.get("version");
+                if (version != null) {
+                    LOG.debug("Bitfinex websocket API version: {}.", version.intValue());
                 }
-                case UNSUBSCRIBED: {
-                    String channelId = message.get(CHANNEL_ID).asText();
-                    subscribedChannels.remove(channelId);
-                    break;
+            } else if (event.textValue().equals(SUBSCRIBED)) {
+                String channel = message.get("channel").asText();
+                String pair = message.get("pair").asText();
+                String channelId = message.get(CHANNEL_ID).asText();
+                try {
+                    String subscriptionUniqueId = getSubscriptionUniqueId(channel, pair);
+                    subscribedChannels.put(channelId, subscriptionUniqueId);
+                    LOG.debug("Register channel {}: {}", subscriptionUniqueId, channelId);
+                } catch (Exception e) {
+                    LOG.error(e.getMessage());
                 }
-                case ERROR:
-                    if (message.get("code").asInt() == SUBSCRIPTION_FAILED) {
-                        LOG.error("Error with message: " + message.get("msg"));
-                        return;
-                    }
-                    super.handleError(message, new ExchangeException("Error code: " + message.get(ERROR_CODE).asText()));
-                    break;
+            } else if (event.textValue().equals(UNSUBSCRIBED)) {
+                String channelId = message.get(CHANNEL_ID).asText();
+                subscribedChannels.remove(channelId);
+            } else if (event.textValue().equals(ERROR)) {
+                if (message.get("code").asInt() == SUBSCRIPTION_FAILED) {
+                    LOG.error("Error with message: " + message.get("symbol") + " " + message.get("msg"));
+                    return;
+                }
+                super.handleError(message, new ExchangeException("Error code: " + message.get("code").asText()));
             }
         } else super.handleMessage(message);
     }
@@ -141,7 +127,6 @@ public class BitfinexStreamingService extends JsonNettyStreamingService {
         }
         if (subscribeMessage == null) throw new IOException("SubscribeMessage: Insufficient arguments");
 
-        ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.writeValueAsString(subscribeMessage);
     }
 
@@ -159,7 +144,7 @@ public class BitfinexStreamingService extends JsonNettyStreamingService {
 
         BitfinexWebSocketUnSubscriptionMessage subscribeMessage =
                 new BitfinexWebSocketUnSubscriptionMessage(channelId);
-        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = StreamingObjectMapperHelper.getObjectMapper();
         return objectMapper.writeValueAsString(subscribeMessage);
     }
 }

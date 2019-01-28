@@ -27,11 +27,18 @@ public class BitfinexStreamingExchange extends BitfinexExchange implements Strea
     protected void initServices() {
         super.initServices();
         streamingService = createStreamingService();
+        streamingAuthenticatedDataService = createAuthStreamingService();
         streamingMarketDataService = new BitfinexStreamingMarketDataService(streamingService);
     }
 
     private BitfinexStreamingService createStreamingService() {
         BitfinexStreamingService streamingService = new BitfinexStreamingService(API_URI);
+        applyStreamingSpecification(getExchangeSpecification(), streamingService);
+        return streamingService;
+    }
+
+    private BitfinexStreamingRawService createAuthStreamingService() {
+        BitfinexStreamingRawService streamingService = new BitfinexStreamingRawService(API_URI);
         applyStreamingSpecification(getExchangeSpecification(), streamingService);
         return streamingService;
     }
