@@ -5,7 +5,7 @@
     <groupId>info.bitrich.xchange-stream</groupId>
     <artifactId>xchange-stream-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.3.9-dsx-SNAPSHOT</version>
+    <version>4.3.10-dsx-SNAPSHOT</version>
 
     <modules>
         <module>xchange-stream-core</module>
@@ -85,7 +85,7 @@
     </repositories>
 
     <properties>
-        <xchange.version>4.3.12-dsx-SNAPSHOT</xchange.version>
+        <xchange.version>4.3.13-dsx-SNAPSHOT</xchange.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
