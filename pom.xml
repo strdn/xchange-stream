@@ -5,7 +5,7 @@
     <groupId>info.bitrich.xchange-stream</groupId>
     <artifactId>xchange-stream-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.3.8-dsx-SNAPSHOT</version>
+    <version>4.3.9-dsx-SNAPSHOT</version>
 
     <modules>
         <module>xchange-stream-core</module>
@@ -73,14 +73,19 @@
     <repositories>
         <!-- For XChange SNAPSHOT dependency -->
         <repository>
-            <id>sonatype-oss-snapshot</id>
+            <id>aws-snapshot</id>
             <snapshots />
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <url>s3://dsx-maven/snapshot/</url>
+        </repository>
+        <repository>
+            <id>aws-release</id>
+            <releases />
+            <url>s3://dsx-maven/release</url>
         </repository>
     </repositories>
 
     <properties>
-        <xchange.version>4.3.11-dsx-SNAPSHOT</xchange.version>
+        <xchange.version>4.3.12-dsx-SNAPSHOT</xchange.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
