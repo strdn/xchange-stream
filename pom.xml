@@ -61,12 +61,12 @@
 
     <distributionManagement>
         <snapshotRepository>
-            <id>aws-snapshot</id>
-            <url>s3://dsx-maven/snapshot/</url>
+            <id>nexus-snapshot</id>
+            <url>https://nexus.dsx.cool/repository/maven-snapshots/</url>
         </snapshotRepository>
         <repository>
-            <id>aws-release</id>
-            <url>s3://dsx-maven/release</url>
+            <id>nexus-release</id>
+            <url>https://nexus.dsx.cool/repository/maven-releases/</url>
         </repository>
     </distributionManagement>
 
@@ -75,12 +75,12 @@
         <repository>
             <id>aws-snapshot</id>
             <snapshots />
-            <url>s3://dsx-maven/snapshot/</url>
+            <url>https://nexus.dsx.cool/repository/maven-snapshots/</url>
         </repository>
         <repository>
             <id>aws-release</id>
             <releases />
-            <url>s3://dsx-maven/release</url>
+            <url>https://nexus.dsx.cool/repository/maven-releases/</url>
         </repository>
     </repositories>
 
