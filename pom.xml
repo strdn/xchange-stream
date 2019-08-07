@@ -28,6 +28,7 @@
         <module>xchange-wex</module>
         <module>xchange-binance</module>
         <module>xchange-hitbtc</module>
+        <module>xchange-bankera</module>
         <module>xchange-kraken</module>
     </modules>
 
@@ -86,7 +87,7 @@
     </repositories>
 
     <properties>
-        <xchange.version>4.3.19</xchange.version>
+        <xchange.version>4.3.20</xchange.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -99,6 +100,13 @@
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
                 <version>2.9.9</version>
+            </dependency>
+            
+            <!-- This is introduced by XChange anyway, depending on the implementation used -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>28.0-jre</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -113,20 +121,20 @@
         <dependency>
             <groupId>io.reactivex.rxjava2</groupId>
             <artifactId>rxjava</artifactId>
-            <version>2.2.10</version>
+            <version>2.2.11</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
-            <version>2.11.2</version>
+            <version>2.12.0</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>2.11.2</version>
+            <version>2.12.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -140,16 +148,17 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>2.28.2</version>
+            <version>3.0.0</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.12.2</version>
+            <version>3.13.2</version>
             <scope>test</scope>
         </dependency>
+        
     </dependencies>
 
     <build>
@@ -195,7 +204,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.1.0</version>
+                        <version>3.1.1</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
