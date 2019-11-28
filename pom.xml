@@ -5,7 +5,7 @@
     <groupId>info.bitrich.xchange-stream</groupId>
     <artifactId>xchange-stream-parent</artifactId>
     <packaging>pom</packaging>
-    <version>4.3.17.1-dsx</version>
+    <version>4.4.0.1-dsx-SNAPHOT</version>
 
     <modules>
         <module>xchange-stream-core</module>
@@ -25,7 +25,6 @@
         <module>xchange-poloniex2</module>
         <module>xchange-bitflyer</module>
         <module>xchange-gemini</module>
-        <module>xchange-wex</module>
         <module>xchange-binance</module>
         <module>xchange-hitbtc</module>
         <module>xchange-bankera</module>
@@ -58,36 +57,31 @@
         <connection>scm:git:git@github.com:bitrich-info/xchange-stream.git</connection>
         <developerConnection>scm:git:git@github.com:bitrich-info/xchange-stream.git</developerConnection>
         <url>git@github.com:bitrich-info/xchange-stream.git</url>
-        <tag>HEAD</tag>
+        <tag>xchange-stream-parent-4.4.0</tag>
     </scm>
 
     <distributionManagement>
         <snapshotRepository>
-            <id>nexus-snapshot</id>
-            <url>https://nexus.dsx.cool/repository/maven-snapshots/</url>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
         <repository>
-            <id>nexus-release</id>
-            <url>https://nexus.dsx.cool/repository/maven-releases/</url>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
 
     <repositories>
         <!-- For XChange SNAPSHOT dependency -->
         <repository>
-            <id>nexus-snapshot</id>
+            <id>sonatype-oss-snapshot</id>
             <snapshots />
-            <url>https://nexus.dsx.cool/repository/maven-snapshots/</url>
-        </repository>
-        <repository>
-            <id>nexus-release</id>
-            <releases />
-            <url>https://nexus.dsx.cool/repository/maven-releases/</url>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </repository>
     </repositories>
 
     <properties>
-        <xchange.version>4.3.20</xchange.version>
+        <xchange.version>4.4.0</xchange.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -99,14 +93,14 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>2.9.9</version>
+                <version>2.9.10</version>
             </dependency>
-            
+
             <!-- This is introduced by XChange anyway, depending on the implementation used -->
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>28.0-jre</version>
+                <version>28.1-jre</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -121,13 +115,13 @@
         <dependency>
             <groupId>io.reactivex.rxjava2</groupId>
             <artifactId>rxjava</artifactId>
-            <version>2.2.11</version>
+            <version>2.2.12</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
-            <version>2.12.0</version>
+            <version>2.12.1</version>
             <scope>test</scope>
         </dependency>
 
@@ -158,7 +152,7 @@
             <version>3.13.2</version>
             <scope>test</scope>
         </dependency>
-        
+
     </dependencies>
 
     <build>

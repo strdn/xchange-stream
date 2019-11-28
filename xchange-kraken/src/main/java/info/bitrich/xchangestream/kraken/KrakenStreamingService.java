@@ -87,7 +87,7 @@ public class KrakenStreamingService extends JsonNettyStreamingService {
         }
 
         if (!message.isArray() || channelName == null) {
-            LOG.error("Unknown message: {}", message.asText());
+            LOG.error("Unknown message: {}", message.toString());
             return;
         }
 
