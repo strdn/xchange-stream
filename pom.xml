@@ -26,9 +26,9 @@
         <module>xchange-bitflyer</module>
         <module>xchange-gemini</module>
         <module>xchange-binance</module>
-        <module>xchange-hitbtc</module>
         <module>xchange-bankera</module>
         <module>xchange-kraken</module>
+        <module>xchange-dsx</module>
     </modules>
 
     <name>xchange-stream</name>
