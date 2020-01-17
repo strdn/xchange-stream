@@ -1,14 +1,12 @@
 package info.bitrich.xchangestream.dsx;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import info.bitrich.xchangestream.dsx.dto.DsxWebSocketSubscriptionMessage;
+import info.bitrich.xchangestream.dsx.dto.enums.DsxEventType;
 import info.bitrich.xchangestream.service.netty.JsonNettyStreamingService;
 import io.netty.handler.codec.http.websocketx.extensions.WebSocketClientExtensionHandler;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.knowm.xchange.hitbtc.v2.dto.HitbtcException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,27 +14,18 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Stream;
 
 /**
- * Created by Pavel Chertalev
+ * @author rimalon
  */
 public class DsxStreamingService extends JsonNettyStreamingService {
     private static final Logger LOG = LoggerFactory.getLogger(DsxStreamingService.class);
+    private static final String JSON_ID = "rid";
+    private static final String JSON_EVENT = "event";
+    private static final String JSON_CHANNEL = "channel";
+    private static final String JSON_INSTRUMENT = "instrument";
+    private static final Integer DEFAULT_LIMIT_VALUE = 100;
 
-    private static final String JSON_METHOD = "method";
-    private static final String JSON_SYMBOL = "symbol";
-    private static final String JSON_PARAMS = "params";
-    private static final String JSON_RESULT = "result";
-    private static final String JSON_ERROR = "error";
-    private static final String JSON_ID = "id";
-
-    private static final String OP_SNAPSHOT = "snapshot";
-    private static final String OP_UPDATE = "update";
-
-    /**
-     * Map request Id to Chanel Name and HitBTC method pair
-     */
     private final Map<Integer, Pair <String, String>> requests = new HashMap<>();
 
 
@@ -50,99 +39,68 @@ public class DsxStreamingService extends JsonNettyStreamingService {
     }
 
     @Override
-    protected String getChannelNameFromMessage(JsonNode message) throws IOException {
-
+    protected String getChannelNameFromMessage(JsonNode message) {
         if (message.has(JSON_ID)) {
             int requestId = message.get(JSON_ID).asInt();
             if (requests.containsKey(requestId)) {
                 return requests.get(requestId).getKey();
             }
         }
-
-        if (message.has(JSON_METHOD)) {
-            String method = message.get(JSON_METHOD).asText();
-            if (message.has(JSON_PARAMS) && message.get(JSON_PARAMS).has(JSON_SYMBOL)) {
-                String symbol = message.get(JSON_PARAMS).get(JSON_SYMBOL).asText();
-
-                return Stream.of(OP_UPDATE, OP_SNAPSHOT)
-                        .filter(method::startsWith)
-                        .map(name -> method.substring(name.length()).toLowerCase() + "-" + symbol)
-                        .findFirst()
-                        .orElse(method.toLowerCase() + "-" + symbol);
+        if (message.has(JSON_CHANNEL)) {
+            String channelName = message.get(JSON_CHANNEL).asText();
+            if (message.has(JSON_INSTRUMENT)) {
+                String instrumentName = message.get(JSON_INSTRUMENT).asText();
+                return channelName + "-" + instrumentName;
             }
-            return method;
+            return channelName;
         }
-
-        throw new IOException("Channel name can't be evaluated from message");
+        return null;
     }
 
     @Override
     protected void handleMessage(JsonNode message) {
-        if (message.has(JSON_ID)) {
-            int requestId = message.get(JSON_ID).asInt();
-            if (requests.containsKey(requestId)) {
-
-                String subscriptionMethod = requests.get(requestId).getLeft();
-
-                if (message.has(JSON_ERROR)) {
-                    try {
-                        HitbtcException exception = objectMapper.treeToValue(message, HitbtcException.class);
-                        super.handleError(message, exception);
-                    } catch (JsonProcessingException e) {
-                        super.handleError(message, e);
-                    }
-                } else {
-                    boolean result = message.get(JSON_RESULT).asBoolean();
-                    LOG.info("HitBTC returned {} as result of '{}' method", result, subscriptionMethod);
-                }
-
-                requests.remove(requestId);
-                return;
-
-            } else {
-                LOG.error("Unknown request ID {}", requestId);
+        String eventName = message.get(JSON_EVENT).asText();
+        DsxEventType dsxEvent = DsxEventType.getEvent(eventName);
+        if (dsxEvent != null) {
+            switch (dsxEvent) {
+                case snapshot:
+                case update:
+                    LOG.debug("Message recieved: {}", message.asText());
+                    super.handleMessage(message);
+                    break;
+                case subscriptionFailed:
+                    LOG.error("Subscription failed. Error message={}", message.asText());
+                    break;
+                default:
+                    LOG.debug("Message recieved: {}", message.asText());
+                    break;
             }
         }
-
-        String channel = getChannel(message);
-        if (!channels.containsKey(channel)) {
-            LOG.warn("The message has been received from disconnected channel '{}'. Skipped.", channel);
-            return;
-        }
-
-        super.handleMessage(message);
     }
 
 
     @Override
     public String getSubscribeMessage(String channelName, Object... args) throws IOException {
-        DsxWebSocketSubscriptionMessage subscribeMessage = generateSubscribeMessage(channelName, "subscribe");
-        requests.put(subscribeMessage.getId(), ImmutablePair.of(channelName, subscribeMessage.getChannel()));
-
+        DsxWebSocketSubscriptionMessage subscribeMessage = generateSubscribeMessage(channelName, DsxEventType.subscribe);
+        requests.put(subscribeMessage.getRid(), ImmutablePair.of(channelName, subscribeMessage.getChannel()));
         return objectMapper.writeValueAsString(subscribeMessage);
     }
 
     @Override
     public String getUnsubscribeMessage(String channelName) throws IOException {
-
-        DsxWebSocketSubscriptionMessage subscribeMessage = generateSubscribeMessage(channelName, "unsubscribe");
-        requests.put(subscribeMessage.getId(), ImmutablePair.of(channelName, subscribeMessage.getChannel()));
-
+        DsxWebSocketSubscriptionMessage subscribeMessage = generateSubscribeMessage(channelName, DsxEventType.subscribed);
+        requests.put(subscribeMessage.getRid(), ImmutablePair.of(channelName, subscribeMessage.getChannel()));
         return objectMapper.writeValueAsString(subscribeMessage);
-
     }
 
-    private DsxWebSocketSubscriptionMessage generateSubscribeMessage(String channelName, String methodType) throws IOException {
-
+    private DsxWebSocketSubscriptionMessage generateSubscribeMessage(String channelName, DsxEventType eventType) throws IOException {
         String[] chanelInfo = channelName.split("-");
-        if (chanelInfo.length < 2) {
-            throw new IOException(methodType + " message: channel name must has format <channelName>-<Symbol> (e.g orderbook-ETHBTC)");
+        if (chanelInfo.length != 2) {
+            throw new IOException(eventType + " message: channel name must has format <channelName>-<Symbol> (e.g orderbook-ETHBTC)");
         }
-
-        String method = StringUtils.capitalize(chanelInfo[0]);
-        String symbol = chanelInfo[1];
+        String channel = chanelInfo[0];
+        String instrument = chanelInfo[1].toLowerCase();
         int requestId = ThreadLocalRandom.current().nextInt(1, Integer.MAX_VALUE);
-
-        return new DsxWebSocketSubscriptionMessage(requestId, method, symbol, methodType);
+        return new DsxWebSocketSubscriptionMessage(requestId, eventType, channel, instrument, DEFAULT_LIMIT_VALUE);
     }
 }

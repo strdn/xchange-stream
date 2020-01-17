@@ -9,7 +9,7 @@ import org.knowm.xchange.ExchangeSpecification;
 import org.knowm.xchange.hitbtc.v2.HitbtcExchange;
 
 /**
- * Created by Pavel Chertalev
+ * @author rimalon
  */
 public class DsxStreamingExchange extends HitbtcExchange implements StreamingExchange {
     private static final String API_URI = "ws://localhost:8080/stream";
