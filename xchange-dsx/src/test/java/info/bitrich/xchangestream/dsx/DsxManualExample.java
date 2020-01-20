@@ -22,6 +22,13 @@ public class DsxManualExample {
             LOG.info("First ask: {}", orderBook.getAsks().get(0));
             LOG.info("First bid: {}", orderBook.getBids().get(0));
         }, throwable -> LOG.error("ERROR in getting order book: ", throwable));
+        Disposable tradesObserver = exchange.getStreamingMarketDataService().getTrades(CurrencyPair.BTC_USD).subscribe(trade -> {
+            LOG.info(trade.toString());
+        }, throwable -> LOG.error("ERROR in getting trades: ", throwable));
+        Disposable tickerObserver = exchange.getStreamingMarketDataService().getTicker(CurrencyPair.BTC_USD).subscribe(ticker -> {
+            LOG.info(ticker.toString());
+        }, throwable -> LOG.error("ERROR in getting ticker: ", throwable));
+
 
         try {
             Thread.sleep(1000000);
@@ -30,6 +37,8 @@ public class DsxManualExample {
         }
 
         orderBookObserver.dispose();
+        tradesObserver.dispose();
+        tickerObserver.dispose();
         exchange.disconnect().subscribe(() -> LOG.info("Disconnected"));
 
     }

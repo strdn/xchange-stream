@@ -1,0 +1,63 @@
+{
+  "channel": "trades",
+  "instrument": "btdusd",
+  "event": "update",
+  "trades": [
+    {
+      "amount": 0.04669459,
+      "price": 8685.60093,
+      "timestamp": 1579521710,
+      "tid": 37776598,
+      "type": "ask"
+    },
+    {
+      "amount": 0.0927675,
+      "price": 8684.50099,
+      "timestamp": 1579521562,
+      "tid": 37776596,
+      "type": "ask"
+    },
+    {
+      "amount": 0.00202573,
+      "price": 8684.50014,
+      "timestamp": 1579521525,
+      "tid": 37776595,
+      "type": "ask"
+    },
+    {
+      "amount": 0.08884705,
+      "price": 8734.98780,
+      "timestamp": 1579521286,
+      "tid": 37776586,
+      "type": "bid"
+    },
+    {
+      "amount": 0.02937918,
+      "price": 8734.98810,
+      "timestamp": 1579521271,
+      "tid": 37776582,
+      "type": "bid"
+    },
+    {
+      "amount": 0.01129968,
+      "price": 8734.98904,
+      "timestamp": 1579521192,
+      "tid": 37776576,
+      "type": "bid"
+    },
+    {
+      "amount": 0.01081907,
+      "price": 8734.98983,
+      "timestamp": 1579521148,
+      "tid": 37776575,
+      "type": "bid"
+    },
+    {
+      "amount": 0.07631111,
+      "price": 8734.99027,
+      "timestamp": 1579521122,
+      "tid": 37776574,
+      "type": "bid"
+    }
+  ]
+}

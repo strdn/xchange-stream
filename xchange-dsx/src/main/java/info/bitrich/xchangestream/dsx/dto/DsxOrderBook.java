@@ -1,5 +1,6 @@
 package info.bitrich.xchangestream.dsx.dto;
 
+import info.bitrich.xchangestream.dsx.dto.messages.DsxOrderbookMessage;
 import org.knowm.xchange.exceptions.ExchangeException;
 
 import java.math.BigDecimal;
@@ -32,6 +33,8 @@ public class DsxOrderBook {
     public long getTimestamp() {
         return timestamp;
     }
+
+    private void setTimestamp(long value) { this.timestamp = value; }
 
     private void createFromMessage(DsxOrderbookMessage message) {
         asks = message.getAsks().stream().collect(
@@ -75,6 +78,7 @@ public class DsxOrderBook {
                     bids.put(orderBookItem[0], orderBookItem);
                 }
             }
+            this.setTimestamp(message.getTimestamp());
             return this;
         }
     }

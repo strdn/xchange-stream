@@ -5,16 +5,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import info.bitrich.xchangestream.core.StreamingMarketDataService;
 import info.bitrich.xchangestream.dsx.dto.*;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxEventType;
+import info.bitrich.xchangestream.dsx.dto.messages.DsxOrderbookMessage;
+import info.bitrich.xchangestream.dsx.dto.messages.DsxTikerMessage;
+import info.bitrich.xchangestream.dsx.dto.messages.DsxTradeMessage;
 import info.bitrich.xchangestream.service.netty.StreamingObjectMapperHelper;
 import io.reactivex.Observable;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dsx.DSXAdapters;
-import org.knowm.xchange.dsx.dto.marketdata.DSXTicker;
 import org.knowm.xchange.dto.marketdata.OrderBook;
 import org.knowm.xchange.dto.marketdata.Ticker;
 import org.knowm.xchange.dto.marketdata.Trade;
 import org.knowm.xchange.dto.trade.LimitOrder;
-import org.knowm.xchange.exceptions.NotYetImplementedForExchangeException;
 
 import java.sql.Date;
 import java.util.ArrayList;
@@ -38,7 +39,7 @@ public class DsxStreamingMarketDataService implements StreamingMarketDataService
     @Override
     public Observable<OrderBook> getOrderBook(CurrencyPair currencyPair, Object... args) {
         String pair = currencyPair.base.toString() + currencyPair.counter.toString();
-        String channelName = getChannelName("book", pair.toLowerCase());
+        String channelName = getChannelName("book", pair.toLowerCase(), args[0].toString());
         final ObjectMapper mapper = StreamingObjectMapperHelper.getObjectMapper();
 
         Observable<JsonNode> jsonNodeObservable = service.subscribeChannel(channelName);
@@ -66,18 +67,20 @@ public class DsxStreamingMarketDataService implements StreamingMarketDataService
     @Override
     public Observable<Trade> getTrades(CurrencyPair currencyPair, Object... args) {
         String pair = currencyPair.base.toString() + currencyPair.counter.toString();
-        String channelName = getChannelName("tiker", pair.toLowerCase());
+        String channelName = getChannelName("trade", pair.toLowerCase(), args[0].toString());
         final ObjectMapper mapper = StreamingObjectMapperHelper.getObjectMapper();
         Observable<JsonNode> jsonNodeObservable = service.subscribeChannel(channelName);
         return jsonNodeObservable
                 .map(jsonNode -> mapper.readValue(jsonNode.toString(), DsxTradeMessage.class))
-                .map(parsedMessage -> DSXAdapters.adaptTrade(parsedMessage.getTrade(), currencyPair));
+                .map(DsxTradeMessage::getTrades)
+                .flatMap(Observable::fromArray)
+                .map(trade -> DSXAdapters.adaptTrade(trade, currencyPair));
     }
 
     @Override
     public Observable<Ticker> getTicker(CurrencyPair currencyPair, Object... args) {
         String pair = currencyPair.base.toString() + currencyPair.counter.toString();
-        String channelName = getChannelName("tiker", pair.toLowerCase());
+        String channelName = getChannelName("tiker", pair.toLowerCase(), args[0].toString());
         final ObjectMapper mapper = StreamingObjectMapperHelper.getObjectMapper();
         Observable<JsonNode> jsonNodeObservable = service.subscribeChannel(channelName);
         return jsonNodeObservable
@@ -85,7 +88,7 @@ public class DsxStreamingMarketDataService implements StreamingMarketDataService
                 .map(parsedMessage -> DSXAdapters.adaptTicker(parsedMessage.getTicker(), currencyPair));
     }
 
-    private String getChannelName(String entityName, String pair) {
-        return entityName + "-" + pair;
+    private String getChannelName(String entityName, String instrument, String mode) {
+        return entityName + "-" + instrument + "-" + mode;
     }
 }

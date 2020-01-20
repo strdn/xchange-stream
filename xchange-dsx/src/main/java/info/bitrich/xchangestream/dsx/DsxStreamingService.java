@@ -1,7 +1,8 @@
 package info.bitrich.xchangestream.dsx;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import info.bitrich.xchangestream.dsx.dto.DsxWebSocketSubscriptionMessage;
+import info.bitrich.xchangestream.dsx.dto.enums.DsxModeType;
+import info.bitrich.xchangestream.dsx.dto.messages.DsxWebSocketSubscriptionMessage;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxEventType;
 import info.bitrich.xchangestream.service.netty.JsonNettyStreamingService;
 import io.netty.handler.codec.http.websocketx.extensions.WebSocketClientExtensionHandler;
@@ -95,12 +96,12 @@ public class DsxStreamingService extends JsonNettyStreamingService {
 
     private DsxWebSocketSubscriptionMessage generateSubscribeMessage(String channelName, DsxEventType eventType) throws IOException {
         String[] chanelInfo = channelName.split("-");
-        if (chanelInfo.length != 2) {
+        if (chanelInfo.length != 3) {
             throw new IOException(eventType + " message: channel name must has format <channelName>-<Symbol> (e.g orderbook-ETHBTC)");
         }
         String channel = chanelInfo[0];
         String instrument = chanelInfo[1].toLowerCase();
         int requestId = ThreadLocalRandom.current().nextInt(1, Integer.MAX_VALUE);
-        return new DsxWebSocketSubscriptionMessage(requestId, eventType, channel, instrument, DEFAULT_LIMIT_VALUE);
+        return new DsxWebSocketSubscriptionMessage(requestId, eventType, channel, DsxModeType.valueOf(chanelInfo[2]), instrument, DEFAULT_LIMIT_VALUE);
     }
 }
