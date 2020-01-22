@@ -24,7 +24,7 @@ public class SubscriptionMessageFactory {
         String instrument = chanelInfo[1].toLowerCase();
         long requestId = UUID.randomUUID().getMostSignificantBits();
         int prevDealsCount = checkSecondIntegerArgument(DEFAULT_PREV_DEALS_COUNT_VALUE, args);
-        return new DsxWebSocketTradeSubscriptionMessage(requestId, DsxEventType.subscribe, DsxChannelsType.book, DsxModeType.valueOf(chanelInfo[2]), instrument, prevDealsCount);
+        return new DsxWebSocketTradeSubscriptionMessage(requestId, DsxEventType.subscribe, DsxChannelsType.trade, DsxModeType.valueOf(chanelInfo[2]), instrument, prevDealsCount);
     }
 
     public static DsxWebSocketSubscriptionMessage createBasicMessage(String channelName, DsxEventType eventType) {
