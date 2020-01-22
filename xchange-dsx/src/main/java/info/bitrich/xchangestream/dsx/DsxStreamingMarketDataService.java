@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import info.bitrich.xchangestream.core.StreamingMarketDataService;
 import info.bitrich.xchangestream.dsx.dto.*;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxEventType;
+import info.bitrich.xchangestream.dsx.dto.enums.DsxModeType;
 import info.bitrich.xchangestream.dsx.dto.messages.DsxOrderbookMessage;
 import info.bitrich.xchangestream.dsx.dto.messages.DsxTikerMessage;
 import info.bitrich.xchangestream.dsx.dto.messages.DsxTradeMessage;
@@ -89,12 +90,12 @@ public class DsxStreamingMarketDataService implements StreamingMarketDataService
     private String getChannelName(String entityName, CurrencyPair currencyPair, Object... args) {
         String instrument = currencyPair.base.toString() + currencyPair.counter.toString();
         String mode;
-        if (args.length == 0){
-            LOG.warn("In channel {} the mod parameter was not passed, the default is LIVE", entityName);
-            mode = "LIVE";
+        if (args.length != 0 && args[0] instanceof DsxModeType){
+            mode = args[0].toString();
         }
         else {
-            mode = (String) args[0];
+            LOG.warn("In channel {} the mod parameter was not passed, the default is LIVE", entityName);
+            mode = "LIVE";
         }
         return entityName + "-" + instrument + "-" + mode;
     }
