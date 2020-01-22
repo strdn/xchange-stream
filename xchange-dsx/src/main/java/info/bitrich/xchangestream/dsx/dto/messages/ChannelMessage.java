@@ -1,19 +1,19 @@
 package info.bitrich.xchangestream.dsx.dto.messages;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import info.bitrich.xchangestream.dsx.dto.enums.DsxChannelsType;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxEventType;
-import info.bitrich.xchangestream.dsx.dto.enums.DsxModeType;
 
 /**
  * @author rimalon
  */
 public class ChannelMessage {
     private final DsxEventType event;
-    private final String channel;
+    private final DsxChannelsType channel;
 
     public ChannelMessage(
             @JsonProperty("event") DsxEventType event,
-            @JsonProperty("channel") String channel) {
+            @JsonProperty("channel") DsxChannelsType channel) {
         this.channel = channel;
         this.event = event;
     }
@@ -22,7 +22,7 @@ public class ChannelMessage {
         return event;
     }
 
-    public String getChannel() {
+    public DsxChannelsType getChannel() {
         return channel;
     }
 }

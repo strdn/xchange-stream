@@ -28,7 +28,7 @@ public class DsxStreamingService extends JsonNettyStreamingService {
     private static final String JSON_MODE = "mode";
     private static final Integer DEFAULT_LIMIT_VALUE = 100;
 
-    private final Map<Integer, Pair <String, String>> requests = new HashMap<>();
+    private final Map<Long, Pair <String, DsxChannelsType>> requests = new HashMap<>();
 
 
     public DsxStreamingService(String apiUrl) {
@@ -43,7 +43,7 @@ public class DsxStreamingService extends JsonNettyStreamingService {
     @Override
     protected String getChannelNameFromMessage(JsonNode message) {
         if (message.has(JSON_ID)) {
-            int requestId = message.get(JSON_ID).asInt();
+            long requestId = message.get(JSON_ID).asLong();
             if (requests.containsKey(requestId)) {
                 return requests.get(requestId).getKey();
             }
@@ -71,42 +71,30 @@ public class DsxStreamingService extends JsonNettyStreamingService {
             switch (dsxEvent) {
                 case snapshot:
                 case update:
-                    LOG.debug("Message recieved: {}", message.asText());
+                    LOG.debug("Message received: {}", message.toString());
                     super.handleMessage(message);
                     break;
                 case subscriptionFailed:
-                    LOG.error("Subscription failed. Error message={}", message.asText());
+                    LOG.error("Subscription failed. Error message={}", message.toString());
                     break;
                 default:
-                    LOG.debug("Message recieved: {}", message.asText());
+                    LOG.debug("Message received: {}", message.toString());
                     break;
             }
         }
     }
 
-
     @Override
     public String getSubscribeMessage(String channelName, Object... args) throws IOException {
-        DsxWebSocketSubscriptionMessage subscribeMessage = generateSubscribeMessage(channelName, DsxEventType.subscribe);
-        requests.put(subscribeMessage.getRid(), ImmutablePair.of(channelName, subscribeMessage.getChannel()));
-        return objectMapper.writeValueAsString(subscribeMessage);
+        DsxWebSocketSubscriptionMessage message = DsxChannelsType.getChannelFromChannelName(channelName).getSubscriptionMessageCreator().apply(channelName, args);
+        requests.put(message.getRid(), ImmutablePair.of(channelName, message.getChannel()));
+        return objectMapper.writeValueAsString(message);
     }
 
     @Override
     public String getUnsubscribeMessage(String channelName) throws IOException {
-        DsxWebSocketSubscriptionMessage subscribeMessage = generateSubscribeMessage(channelName, DsxEventType.subscribed);
-        requests.put(subscribeMessage.getRid(), ImmutablePair.of(channelName, subscribeMessage.getChannel()));
-        return objectMapper.writeValueAsString(subscribeMessage);
-    }
-
-    private DsxWebSocketSubscriptionMessage generateSubscribeMessage(String channelName, DsxEventType eventType) throws IOException {
-        String[] chanelInfo = channelName.split("-");
-        if (chanelInfo.length != 3) {
-            throw new IOException(eventType + " message: channel name must has format <channelName>-<Symbol> (e.g orderbook-ETHBTC)");
-        }
-        String channel = chanelInfo[0];
-        String instrument = chanelInfo[1].toLowerCase();
-        int requestId = ThreadLocalRandom.current().nextInt(1, Integer.MAX_VALUE);
-        return new DsxWebSocketSubscriptionMessage(requestId, eventType, channel, DsxModeType.valueOf(chanelInfo[2]), instrument, DEFAULT_LIMIT_VALUE);
+        DsxWebSocketSubscriptionMessage message = SubscriptionMessageFactory.createBasicMessage(channelName, DsxEventType.unsubscribe);
+        requests.put(message.getRid(), ImmutablePair.of(channelName, message.getChannel()));
+        return objectMapper.writeValueAsString(message);
     }
 }
