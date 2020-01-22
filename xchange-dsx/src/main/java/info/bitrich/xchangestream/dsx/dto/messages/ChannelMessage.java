@@ -8,18 +8,14 @@ import info.bitrich.xchangestream.dsx.dto.enums.DsxModeType;
  * @author rimalon
  */
 public class ChannelMessage {
-    private DsxEventType event;
-    private String channel;
-    private DsxModeType mode;
-
+    private final DsxEventType event;
+    private final String channel;
 
     public ChannelMessage(
             @JsonProperty("event") DsxEventType event,
-            @JsonProperty("channel") String channel,
-            @JsonProperty("mode") DsxModeType mode) {
+            @JsonProperty("channel") String channel) {
         this.channel = channel;
         this.event = event;
-        this.mode = mode;
     }
 
     public DsxEventType getEvent() {
@@ -29,6 +25,4 @@ public class ChannelMessage {
     public String getChannel() {
         return channel;
     }
-
-    public DsxModeType getMode() { return mode; }
 }

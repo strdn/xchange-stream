@@ -8,15 +8,13 @@ import org.knowm.xchange.dsx.dto.marketdata.DSXTrade;
 /**
  * @author rimalon
  */
-public class DsxTradeMessage extends ChannelMessage {
-    private final String instrument;
+public class DsxTradeMessage extends InstrumentMessage {
     private final DSXTrade[] trades;
 
     public DsxTradeMessage(@JsonProperty("event") DsxEventType event, @JsonProperty("channel") String channel,
-                           @JsonProperty("mode") DsxModeType mode, @JsonProperty("instrument") String instrument, @JsonProperty("trade") DSXTrade[] trade) {
-        super(event, channel, mode);
-        this.instrument = instrument;
-        this.trades = trade;
+                           @JsonProperty("instrument") String instrument, @JsonProperty("mode") DsxModeType mode, @JsonProperty("trade") DSXTrade[] trades) {
+        super(event, channel, instrument, mode);
+        this.trades = trades;
     }
 
     public DSXTrade[] getTrades() { return trades; }

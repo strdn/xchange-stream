@@ -7,10 +7,8 @@ import info.bitrich.xchangestream.dsx.dto.enums.DsxModeType;
 /**
  * @author rimalon
  */
-public class DsxWebSocketSubscriptionMessage extends ChannelMessage {
-
+public class DsxWebSocketSubscriptionMessage extends InstrumentMessage {
     private final int rid;
-    private final String instrument;
     private final Integer limit;
 
     public DsxWebSocketSubscriptionMessage(@JsonProperty("rid") int rid,
@@ -19,18 +17,13 @@ public class DsxWebSocketSubscriptionMessage extends ChannelMessage {
                                            @JsonProperty("mode") DsxModeType mode,
                                            @JsonProperty("instrument") String instrument,
                                            @JsonProperty("limit") Integer limit) {
-        super(event, channel, mode);
+        super(event, channel, instrument, mode);
         this.rid = rid;
-        this.instrument = instrument;
         this.limit = limit;
     }
 
     public int getRid() {
         return rid;
-    }
-
-    public String getInstrument() {
-        return instrument;
     }
 
     public Integer getLimit() {

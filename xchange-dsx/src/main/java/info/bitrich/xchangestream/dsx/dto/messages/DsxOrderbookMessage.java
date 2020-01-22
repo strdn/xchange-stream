@@ -10,8 +10,7 @@ import java.util.List;
 /**
  * @author rimalon
  */
-public class DsxOrderbookMessage extends ChannelMessage {
-    private final String instrument;
+public class DsxOrderbookMessage extends InstrumentMessage {
     private final List<BigDecimal[]> asks;
     private final List<BigDecimal[]> bids;
     private final long timestamp;
@@ -24,15 +23,10 @@ public class DsxOrderbookMessage extends ChannelMessage {
             @JsonProperty("limit") List<BigDecimal[]> asks,
             @JsonProperty("bids") List<BigDecimal[]> bids,
             @JsonProperty("timestamp") long timestamp) {
-        super(event, channel, mode);
-        this.instrument = instrument;
+        super(event, channel, instrument, mode);
         this.asks = asks;
         this.bids = bids;
         this.timestamp = timestamp;
-    }
-
-    public String getInstrument() {
-        return instrument;
     }
 
     public List<BigDecimal[]> getAsks() {
