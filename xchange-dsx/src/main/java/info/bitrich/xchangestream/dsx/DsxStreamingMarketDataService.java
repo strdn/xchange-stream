@@ -3,7 +3,7 @@ package info.bitrich.xchangestream.dsx;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import info.bitrich.xchangestream.core.StreamingMarketDataService;
-import info.bitrich.xchangestream.dsx.dto.*;
+import info.bitrich.xchangestream.dsx.dto.DsxOrderBook;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxEventType;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxModeType;
 import info.bitrich.xchangestream.dsx.dto.messages.DsxOrderbookMessage;
@@ -43,7 +43,7 @@ public class DsxStreamingMarketDataService implements StreamingMarketDataService
         String channelName = getChannelName("book", currencyPair, args);
         final ObjectMapper mapper = StreamingObjectMapperHelper.getObjectMapper();
 
-        Observable<JsonNode> jsonNodeObservable = service.subscribeChannel(channelName);
+        Observable<JsonNode> jsonNodeObservable = service.subscribeChannel(channelName, args);
         return jsonNodeObservable
                 .map(jsonNode -> mapper.readValue(jsonNode.toString(), DsxOrderbookMessage.class))
                 .map(parsedMessage -> {
@@ -69,7 +69,7 @@ public class DsxStreamingMarketDataService implements StreamingMarketDataService
     public Observable<Trade> getTrades(CurrencyPair currencyPair, Object... args) {
         String channelName = getChannelName("trade", currencyPair, args);
         final ObjectMapper mapper = StreamingObjectMapperHelper.getObjectMapper();
-        Observable<JsonNode> jsonNodeObservable = service.subscribeChannel(channelName);
+        Observable<JsonNode> jsonNodeObservable = service.subscribeChannel(channelName, args);
         return jsonNodeObservable
                 .map(jsonNode -> mapper.readValue(jsonNode.toString(), DsxTradeMessage.class))
                 .map(DsxTradeMessage::getTrades)
@@ -94,9 +94,9 @@ public class DsxStreamingMarketDataService implements StreamingMarketDataService
             mode = args[0].toString();
         }
         else {
-            LOG.warn("In channel {} the mod parameter was not passed, the default is LIVE", entityName);
+            LOG.warn("Channel {} mode was not correctly specified, so the default mode LIVE is used", entityName);
             mode = "LIVE";
         }
-        return entityName + "-" + instrument + "-" + mode;
+        return entityName + "-" + instrument.toLowerCase() + "-" + mode;
     }
 }

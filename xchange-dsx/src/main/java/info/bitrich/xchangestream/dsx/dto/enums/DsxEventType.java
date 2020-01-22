@@ -16,7 +16,7 @@ public enum DsxEventType {
     subscriptionFailed,
     snapshot,
     update,
-    unsubscribed;
+    unsubscribe;
 
     public static DsxEventType getEvent(String event) {
         return Arrays.stream(DsxEventType.values())

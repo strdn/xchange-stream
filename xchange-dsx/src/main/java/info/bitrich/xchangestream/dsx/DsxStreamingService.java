@@ -1,9 +1,10 @@
 package info.bitrich.xchangestream.dsx;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import info.bitrich.xchangestream.dsx.dto.enums.DsxModeType;
-import info.bitrich.xchangestream.dsx.dto.messages.DsxWebSocketSubscriptionMessage;
+import info.bitrich.xchangestream.dsx.dto.enums.DsxChannelsType;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxEventType;
+import info.bitrich.xchangestream.dsx.dto.messages.DsxWebSocketSubscriptionMessage;
+import info.bitrich.xchangestream.dsx.dto.messages.SubscriptionMessageFactory;
 import info.bitrich.xchangestream.service.netty.JsonNettyStreamingService;
 import io.netty.handler.codec.http.websocketx.extensions.WebSocketClientExtensionHandler;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -14,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * @author rimalon

@@ -1,6 +1,7 @@
 package info.bitrich.xchangestream.dsx.dto.messages;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import info.bitrich.xchangestream.dsx.dto.enums.DsxChannelsType;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxEventType;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxModeType;
 
@@ -17,7 +18,7 @@ public class DsxOrderbookMessage extends InstrumentMessage {
 
     public DsxOrderbookMessage(
             @JsonProperty("event") DsxEventType event,
-            @JsonProperty("channel") String channel,
+            @JsonProperty("channel") DsxChannelsType channel,
             @JsonProperty("mode") DsxModeType mode,
             @JsonProperty("instrument") String instrument,
             @JsonProperty("limit") List<BigDecimal[]> asks,

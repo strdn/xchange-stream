@@ -2,7 +2,6 @@ package info.bitrich.xchangestream.dsx;
 
 import info.bitrich.xchangestream.core.StreamingExchange;
 import info.bitrich.xchangestream.core.StreamingExchangeFactory;
-import info.bitrich.xchangestream.dsx.dto.enums.DsxModeType;
 import io.reactivex.disposables.Disposable;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.slf4j.Logger;
@@ -19,14 +18,14 @@ public class DsxManualExample {
                 .getName());
 
         exchange.connect().blockingAwait();
-        Disposable orderBookObserver = exchange.getStreamingMarketDataService().getOrderBook(CurrencyPair.BTC_USD, DsxModeType.LIVE).subscribe(orderBook -> {
+        Disposable orderBookObserver = exchange.getStreamingMarketDataService().getOrderBook(CurrencyPair.BTC_USD).subscribe(orderBook -> {
             LOG.info("First ask: {}", orderBook.getAsks().get(0));
             LOG.info("First bid: {}", orderBook.getBids().get(0));
         }, throwable -> LOG.error("ERROR in getting order book: ", throwable));
-        Disposable tradesObserver = exchange.getStreamingMarketDataService().getTrades(CurrencyPair.BTC_USD, DsxModeType.LIVE).subscribe(trade -> {
+        Disposable tradesObserver = exchange.getStreamingMarketDataService().getTrades(CurrencyPair.BTC_USD).subscribe(trade -> {
             LOG.info(trade.toString());
         }, throwable -> LOG.error("ERROR in getting trades: ", throwable));
-        Disposable tickerObserver = exchange.getStreamingMarketDataService().getTicker(CurrencyPair.BTC_USD, DsxModeType.LIVE).subscribe(ticker -> {
+        Disposable tickerObserver = exchange.getStreamingMarketDataService().getTicker(CurrencyPair.BTC_USD).subscribe(ticker -> {
             LOG.info(ticker.toString());
         }, throwable -> LOG.error("ERROR in getting ticker: ", throwable));
 
