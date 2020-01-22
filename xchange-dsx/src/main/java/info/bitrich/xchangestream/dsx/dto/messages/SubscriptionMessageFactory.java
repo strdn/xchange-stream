@@ -15,14 +15,7 @@ public class SubscriptionMessageFactory {
         String[] chanelInfo = channelName.split("-");
         String instrument = chanelInfo[1].toLowerCase();
         long requestId = UUID.randomUUID().getMostSignificantBits();
-        int limit;
-        if (args.length >= 2 && args[1] instanceof Integer){
-            limit = (int) args[1];
-        }
-        else
-        {
-            limit = DEFAULT_LIMIT_VALUE;
-        }
+        int limit = checkSecondIntegerArgument(DEFAULT_LIMIT_VALUE, args);
         return new DsxWebSocketOrderbookSubscriptionMessage(requestId, DsxEventType.subscribe, DsxChannelsType.book, DsxModeType.valueOf(chanelInfo[2]), instrument, limit);
     }
 
@@ -30,14 +23,7 @@ public class SubscriptionMessageFactory {
         String[] chanelInfo = channelName.split("-");
         String instrument = chanelInfo[1].toLowerCase();
         long requestId = UUID.randomUUID().getMostSignificantBits();
-        int prevDealsCount;
-        if (args.length >= 2 && args[1] instanceof Integer){
-            prevDealsCount = (int) args[1];
-        }
-        else
-        {
-            prevDealsCount = DEFAULT_PREV_DEALS_COUNT_VALUE;
-        }
+        int prevDealsCount = checkSecondIntegerArgument(DEFAULT_PREV_DEALS_COUNT_VALUE, args);
         return new DsxWebSocketTradeSubscriptionMessage(requestId, DsxEventType.subscribe, DsxChannelsType.book, DsxModeType.valueOf(chanelInfo[2]), instrument, prevDealsCount);
     }
 
@@ -46,5 +32,13 @@ public class SubscriptionMessageFactory {
         String instrument = chanelInfo[1].toLowerCase();
         long requestId = UUID.randomUUID().getMostSignificantBits();
         return new DsxWebSocketSubscriptionMessage(requestId, eventType, DsxChannelsType.getChannelFromChannelName(channelName), DsxModeType.valueOf(chanelInfo[2]), instrument);
+    }
+
+    private static int checkSecondIntegerArgument(int defaultValue, Object... args){
+        if (args.length >= 2 && args[1] instanceof Integer){
+            return (int) args[1];
+        } else {
+            return defaultValue;
+        }
     }
 }
