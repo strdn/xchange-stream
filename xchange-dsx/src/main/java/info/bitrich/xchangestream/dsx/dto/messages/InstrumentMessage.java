@@ -1,26 +1,26 @@
 package info.bitrich.xchangestream.dsx.dto.messages;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import info.bitrich.xchangestream.dsx.dto.enums.DsxChannelsType;
+import info.bitrich.xchangestream.dsx.dto.enums.DsxChannel;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxEventType;
-import info.bitrich.xchangestream.dsx.dto.enums.DsxModeType;
+import info.bitrich.xchangestream.dsx.dto.enums.DsxInstrumentType;
 
 /**
  * @author rimalon
  */
 public class InstrumentMessage extends ChannelMessage {
-    private final DsxModeType mode;
+    private final DsxInstrumentType instrumentType;
     private final String instrument;
 
-    public InstrumentMessage(@JsonProperty("event") DsxEventType event, @JsonProperty("channel") DsxChannelsType channel,
-                             @JsonProperty("instrument") String instrument, @JsonProperty("mode") DsxModeType mode) {
+    public InstrumentMessage(@JsonProperty("event") DsxEventType event, @JsonProperty("channel") DsxChannel channel,
+                             @JsonProperty("instrument") String instrument, @JsonProperty("instrumentType") DsxInstrumentType instrumentType) {
         super(event, channel);
         this.instrument = instrument;
-        this.mode = mode;
+        this.instrumentType = instrumentType;
     }
 
-    public DsxModeType getMode() {
-        return mode;
+    public DsxInstrumentType getInstrumentType() {
+        return instrumentType;
     }
 
     public String getInstrument() {

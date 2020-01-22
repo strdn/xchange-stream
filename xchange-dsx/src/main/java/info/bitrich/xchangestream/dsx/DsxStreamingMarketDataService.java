@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import info.bitrich.xchangestream.core.StreamingMarketDataService;
 import info.bitrich.xchangestream.dsx.dto.DsxOrderBook;
+import info.bitrich.xchangestream.dsx.dto.enums.DsxChannel;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxEventType;
-import info.bitrich.xchangestream.dsx.dto.enums.DsxModeType;
 import info.bitrich.xchangestream.dsx.dto.messages.DsxOrderbookMessage;
 import info.bitrich.xchangestream.dsx.dto.messages.DsxTikerMessage;
 import info.bitrich.xchangestream.dsx.dto.messages.DsxTradeMessage;
@@ -26,21 +26,25 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static info.bitrich.xchangestream.dsx.DsxSubscriptionHelper.createChannelName;
+
 /**
  * @author rimalon
  */
 public class DsxStreamingMarketDataService implements StreamingMarketDataService {
 
+    private static final Logger LOG = LoggerFactory.getLogger(DsxStreamingMarketDataService.class);
+
     private final DsxStreamingService service;
     private ConcurrentHashMap<CurrencyPair, DsxOrderBook> orderbooks = new ConcurrentHashMap<>();
-    private static final Logger LOG = LoggerFactory.getLogger(DsxStreamingMarketDataService.class);
+
     public DsxStreamingMarketDataService(DsxStreamingService service) {
         this.service = service;
     }
 
     @Override
     public Observable<OrderBook> getOrderBook(CurrencyPair currencyPair, Object... args) {
-        String channelName = getChannelName("book", currencyPair, args);
+        String channelName = createChannelName(DsxChannel.book, currencyPair, args);
         final ObjectMapper mapper = StreamingObjectMapperHelper.getObjectMapper();
 
         Observable<JsonNode> jsonNodeObservable = service.subscribeChannel(channelName, args);
@@ -67,7 +71,7 @@ public class DsxStreamingMarketDataService implements StreamingMarketDataService
 
     @Override
     public Observable<Trade> getTrades(CurrencyPair currencyPair, Object... args) {
-        String channelName = getChannelName("trade", currencyPair, args);
+        String channelName = createChannelName(DsxChannel.trade, currencyPair, args);
         final ObjectMapper mapper = StreamingObjectMapperHelper.getObjectMapper();
         Observable<JsonNode> jsonNodeObservable = service.subscribeChannel(channelName, args);
         return jsonNodeObservable
@@ -79,7 +83,7 @@ public class DsxStreamingMarketDataService implements StreamingMarketDataService
 
     @Override
     public Observable<Ticker> getTicker(CurrencyPair currencyPair, Object... args) {
-        String channelName = getChannelName("ticker", currencyPair, args);
+        String channelName = createChannelName(DsxChannel.ticker, currencyPair, args);
         final ObjectMapper mapper = StreamingObjectMapperHelper.getObjectMapper();
         Observable<JsonNode> jsonNodeObservable = service.subscribeChannel(channelName);
         return jsonNodeObservable
@@ -87,16 +91,4 @@ public class DsxStreamingMarketDataService implements StreamingMarketDataService
                 .map(parsedMessage -> DSXAdapters.adaptTicker(parsedMessage.getTicker(), currencyPair));
     }
 
-    private String getChannelName(String entityName, CurrencyPair currencyPair, Object... args) {
-        String instrument = currencyPair.base.toString() + currencyPair.counter.toString();
-        String mode;
-        if (args.length != 0 && args[0] instanceof DsxModeType){
-            mode = args[0].toString();
-        }
-        else {
-            LOG.warn("Channel {} mode was not correctly specified, so the default mode LIVE is used", entityName);
-            mode = "LIVE";
-        }
-        return entityName + "-" + instrument.toLowerCase() + "-" + mode;
-    }
 }

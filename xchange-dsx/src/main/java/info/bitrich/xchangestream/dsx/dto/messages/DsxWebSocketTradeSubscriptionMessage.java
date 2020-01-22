@@ -1,9 +1,9 @@
 package info.bitrich.xchangestream.dsx.dto.messages;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import info.bitrich.xchangestream.dsx.dto.enums.DsxChannelsType;
+import info.bitrich.xchangestream.dsx.dto.enums.DsxChannel;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxEventType;
-import info.bitrich.xchangestream.dsx.dto.enums.DsxModeType;
+import info.bitrich.xchangestream.dsx.dto.enums.DsxInstrumentType;
 
 /**
  * @author rimalon
@@ -13,11 +13,11 @@ public class DsxWebSocketTradeSubscriptionMessage extends DsxWebSocketSubscripti
 
     public DsxWebSocketTradeSubscriptionMessage(@JsonProperty("rid") long rid,
                                                 @JsonProperty("event") DsxEventType event,
-                                                @JsonProperty("channel") DsxChannelsType channel,
-                                                @JsonProperty("mode") DsxModeType mode,
+                                                @JsonProperty("channel") DsxChannel channel,
+                                                @JsonProperty("instrumentType") DsxInstrumentType instrumentType,
                                                 @JsonProperty("instrument") String instrument,
                                                 @JsonProperty("prevDealsCount") Integer prevDealsCount) {
-        super(rid, event, channel, mode, instrument);
+        super(rid, event, channel, instrumentType, instrument);
         this.prevDealsCount = prevDealsCount;
     }
 

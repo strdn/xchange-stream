@@ -8,16 +8,27 @@ import java.util.Arrays;
  * @author rimalon
  */
 public enum DsxEventType {
-    ping,
-    pong,
     heartbeat,
+
     subscribe,
-    subscribed,
-    subscriptionFailed,
-    snapshot,
-    update,
+    subscribed(subscribe),
     unsubscribe,
-    unsubscribed;
+    unsubscribed(unsubscribe),
+    subscriptionFailed(subscribe),
+    unsubscriptionFailed(unsubscribe),
+
+    snapshot,
+    update;
+
+    public final DsxEventType sourceEvent;
+
+    DsxEventType() {
+        this(null);
+    }
+
+    DsxEventType(DsxEventType sourceEvent) {
+        this.sourceEvent = sourceEvent;
+    }
 
     public static DsxEventType getEvent(String event) {
         return Arrays.stream(DsxEventType.values())
