@@ -16,13 +16,14 @@ import org.knowm.xchange.dto.marketdata.OrderBook;
 import org.knowm.xchange.dto.marketdata.Ticker;
 import org.knowm.xchange.dto.marketdata.Trade;
 import org.knowm.xchange.dto.trade.LimitOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author rimalon
@@ -30,8 +31,8 @@ import java.util.Map;
 public class DsxStreamingMarketDataService implements StreamingMarketDataService {
 
     private final DsxStreamingService service;
-    private Map<CurrencyPair, DsxOrderBook> orderbooks = new HashMap<>();
-
+    private ConcurrentHashMap<CurrencyPair, DsxOrderBook> orderbooks = new ConcurrentHashMap<>();
+    private static final Logger LOG = LoggerFactory.getLogger(DsxStreamingMarketDataService.class);
     public DsxStreamingMarketDataService(DsxStreamingService service) {
         this.service = service;
     }
@@ -39,7 +40,14 @@ public class DsxStreamingMarketDataService implements StreamingMarketDataService
     @Override
     public Observable<OrderBook> getOrderBook(CurrencyPair currencyPair, Object... args) {
         String pair = currencyPair.base.toString() + currencyPair.counter.toString();
-        String channelName = getChannelName("book", pair.toLowerCase(), args[0].toString());
+        String channelName;
+        if (args.length == 0){
+            LOG.warn("In method getOrderBook the mod parameter was not passed, the default is LIVE");
+            channelName = getChannelName("book", pair.toLowerCase(), "LIVE");
+        }
+        else {
+            channelName = getChannelName("book", pair.toLowerCase(), args[0].toString());
+        }
         final ObjectMapper mapper = StreamingObjectMapperHelper.getObjectMapper();
 
         Observable<JsonNode> jsonNodeObservable = service.subscribeChannel(channelName);
@@ -67,7 +75,14 @@ public class DsxStreamingMarketDataService implements StreamingMarketDataService
     @Override
     public Observable<Trade> getTrades(CurrencyPair currencyPair, Object... args) {
         String pair = currencyPair.base.toString() + currencyPair.counter.toString();
-        String channelName = getChannelName("trade", pair.toLowerCase(), args[0].toString());
+        String channelName;
+        if (args.length == 0){
+            LOG.warn("In method getTrades the mod parameter was not passed, the default is LIVE");
+            channelName = getChannelName("trade", pair.toLowerCase(), "LIVE");
+        }
+        else {
+            channelName = getChannelName("trade", pair.toLowerCase(), args[0].toString());
+        }
         final ObjectMapper mapper = StreamingObjectMapperHelper.getObjectMapper();
         Observable<JsonNode> jsonNodeObservable = service.subscribeChannel(channelName);
         return jsonNodeObservable
@@ -80,7 +95,14 @@ public class DsxStreamingMarketDataService implements StreamingMarketDataService
     @Override
     public Observable<Ticker> getTicker(CurrencyPair currencyPair, Object... args) {
         String pair = currencyPair.base.toString() + currencyPair.counter.toString();
-        String channelName = getChannelName("tiker", pair.toLowerCase(), args[0].toString());
+        String channelName;
+        if (args.length == 0){
+            LOG.warn("In method getTicker the mod parameter was not passed, the default is LIVE");
+            channelName = getChannelName("ticker", pair.toLowerCase(), "LIVE");
+        }
+        else {
+            channelName = getChannelName("ticker", pair.toLowerCase(), args[0].toString());
+        }
         final ObjectMapper mapper = StreamingObjectMapperHelper.getObjectMapper();
         Observable<JsonNode> jsonNodeObservable = service.subscribeChannel(channelName);
         return jsonNodeObservable
