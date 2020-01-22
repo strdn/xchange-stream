@@ -25,6 +25,7 @@ public class DsxStreamingService extends JsonNettyStreamingService {
     private static final String JSON_EVENT = "event";
     private static final String JSON_CHANNEL = "channel";
     private static final String JSON_INSTRUMENT = "instrument";
+    private static final String JSON_MODE = "mode";
     private static final Integer DEFAULT_LIMIT_VALUE = 100;
 
     private final Map<Integer, Pair <String, String>> requests = new HashMap<>();
@@ -51,6 +52,10 @@ public class DsxStreamingService extends JsonNettyStreamingService {
             String channelName = message.get(JSON_CHANNEL).asText();
             if (message.has(JSON_INSTRUMENT)) {
                 String instrumentName = message.get(JSON_INSTRUMENT).asText();
+                if (message.has(JSON_MODE)){
+                    String modeName = message.get(JSON_MODE).asText();
+                    return channelName + "-" + instrumentName + "-" + modeName;
+                }
                 return channelName + "-" + instrumentName;
             }
             return channelName;

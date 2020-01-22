@@ -9,23 +9,17 @@ import org.knowm.xchange.dsx.dto.marketdata.DSXTicker;
 /**
  * @author rimalon
  */
-public class DsxTikerMessage extends ChannelMessage {
+public class DsxTikerMessage extends InstrumentMessage {
     private final DSXTicker ticker;
-    private final DsxModeType mode;
 
     @JsonCreator
-    public DsxTikerMessage(@JsonProperty("event") DsxEventType event, @JsonProperty("channel") String channel,
+    public DsxTikerMessage(@JsonProperty("event") DsxEventType event, @JsonProperty("channel") String channel, @JsonProperty String instrument,
                            @JsonProperty("mode") DsxModeType mode, @JsonProperty("ticker") DSXTicker ticker) {
-        super(event, channel);
-        this.mode = mode;
+        super(event, channel, instrument, mode);
         this.ticker = ticker;
     }
 
     public DSXTicker getTicker() {
         return ticker;
-    }
-
-    public DsxModeType getMode() {
-        return mode;
     }
 }
