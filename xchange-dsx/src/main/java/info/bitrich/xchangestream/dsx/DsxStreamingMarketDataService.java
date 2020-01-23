@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import info.bitrich.xchangestream.core.StreamingMarketDataService;
 import info.bitrich.xchangestream.dsx.dto.DsxOrderBook;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxChannel;
-import info.bitrich.xchangestream.dsx.dto.enums.DsxEventType;
 import info.bitrich.xchangestream.dsx.dto.messages.DsxOrderbookMessage;
 import info.bitrich.xchangestream.dsx.dto.messages.DsxTikerMessage;
 import info.bitrich.xchangestream.dsx.dto.messages.DsxTradeMessage;
@@ -22,7 +21,6 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Date;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -36,7 +34,7 @@ public class DsxStreamingMarketDataService implements StreamingMarketDataService
     private static final Logger LOG = LoggerFactory.getLogger(DsxStreamingMarketDataService.class);
 
     private final DsxStreamingService service;
-    private ConcurrentHashMap<CurrencyPair, DsxOrderBook> orderbooks = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, DsxOrderBook> orderbooks = new ConcurrentHashMap<>();
 
     public DsxStreamingMarketDataService(DsxStreamingService service) {
         this.service = service;
@@ -51,22 +49,12 @@ public class DsxStreamingMarketDataService implements StreamingMarketDataService
         return jsonNodeObservable
                 .map(jsonNode -> mapper.readValue(jsonNode.toString(), DsxOrderbookMessage.class))
                 .map(parsedMessage -> {
-                            DsxOrderBook orderbook;
-                            if (!orderbooks.containsKey(currencyPair)) {
-                                if (parsedMessage.getEvent() != DsxEventType.snapshot) {
-                                    return new OrderBook(new Date(0), Collections.emptyList(), Collections.emptyList()); //this
-                                } else {
-                                    orderbook = new DsxOrderBook(parsedMessage);
-                                }
-                            } else {
-                                orderbook = orderbooks.get(currencyPair).toDSXOrderBook(parsedMessage);
-                            }
-                            orderbooks.put(currencyPair, orderbook);
-                            List<LimitOrder> asks = DSXAdapters.adaptOrders(new ArrayList<>(orderbook.getAsks().values()), currencyPair, "ask", "");
-                            List<LimitOrder> bids = DSXAdapters.adaptOrders(new ArrayList<>(orderbook.getBids().values()), currencyPair, "bid", "");
-                            return new OrderBook(new Date(orderbook.getTimestamp()), asks, bids);
-                        }
-                );
+                    DsxOrderBook orderbook = parsedMessage.toDsxOrderBook(orderbooks.get(channelName));
+                    orderbooks.put(channelName, orderbook);
+                    List<LimitOrder> asks = DSXAdapters.adaptOrders(new ArrayList<>(orderbook.getAsks().values()), currencyPair, "ask", "");
+                    List<LimitOrder> bids = DSXAdapters.adaptOrders(new ArrayList<>(orderbook.getBids().values()), currencyPair, "bid", "");
+                    return new OrderBook(new Date(orderbook.getTimestamp()), asks, bids);
+                });
     }
 
     @Override

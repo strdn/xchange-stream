@@ -49,48 +49,49 @@ public class DsxStreamingService extends JsonNettyStreamingService {
 
     @Override
     protected void handleMessage(JsonNode message) {
-        String eventName = message.get(JSON_EVENT).asText();
-        DsxEventType dsxEvent = DsxEventType.getEvent(eventName);
-        if (dsxEvent != null) {
-            switch (dsxEvent) {
-                case snapshot:
-                case update:
-                    LOG.debug("message received: {}", message.toString());
-                    super.handleMessage(message);
-                    break;
-                case heartbeat:
-                    LOG.debug("heartbeat has been received");
-                    break;
-                case subscribed:
-                case unsubscribed:
-                    if (message.has(JSON_REQUEST_ID)) {
-                        long requestId = message.get(JSON_REQUEST_ID).asLong();
-                        DsxChannelInfo channelInfo = requests.remove(requestId);
-                        if (channelInfo != null) {
-                            LOG.info("{} {} request has been successfully completed", channelInfo, dsxEvent.sourceEvent);
-                            return;
+        if (message.has(JSON_EVENT)) {
+            String eventName = message.get(JSON_EVENT).asText();
+            DsxEventType dsxEvent = DsxEventType.getEvent(eventName);
+            if (dsxEvent != null) {
+                switch (dsxEvent) {
+                    case snapshot:
+                    case update:
+                        LOG.debug("message received: {}", message.toString());
+                        super.handleMessage(message);
+                        break;
+                    case heartbeat:
+                        LOG.debug("heartbeat has been received");
+                        break;
+                    case subscribed:
+                    case unsubscribed:
+                        if (message.has(JSON_REQUEST_ID)) {
+                            long requestId = message.get(JSON_REQUEST_ID).asLong();
+                            DsxChannelInfo channelInfo = requests.remove(requestId);
+                            if (channelInfo != null) {
+                                LOG.info("{} {} request has been successfully completed", channelInfo, dsxEvent.sourceEvent);
+                                return;
+                            }
                         }
-                    }
-                    LOG.info("unknown {} request has been successfully completed", dsxEvent.sourceEvent);
-                    return;
-                case unsubscriptionFailed:
-                case subscriptionFailed:
-                    if (message.has(JSON_REQUEST_ID)) {
-                        long requestId = message.get(JSON_REQUEST_ID).asLong();
-                        DsxChannelInfo channelInfo = requests.remove(requestId);
-                        if (channelInfo != null) {
-                            LOG.info("{} {} request has been failed", channelInfo, dsxEvent.sourceEvent);
-                            return;
+                        LOG.info("unknown {} request has been successfully completed", dsxEvent.sourceEvent);
+                        return;
+                    case unsubscriptionFailed:
+                    case subscriptionFailed:
+                        if (message.has(JSON_REQUEST_ID)) {
+                            long requestId = message.get(JSON_REQUEST_ID).asLong();
+                            DsxChannelInfo channelInfo = requests.remove(requestId);
+                            if (channelInfo != null) {
+                                LOG.info("{} {} request has been failed", channelInfo, dsxEvent.sourceEvent);
+                                return;
+                            }
                         }
-                    }
-                    //TODO: extract correct error from message to log
-                    LOG.info("unknown {} request has been failed", dsxEvent.sourceEvent);
-                    break;
-                default:
-                    LOG.debug("unhandled message received: {}", message.toString());
-                    break;
+                        //TODO: extract correct error from message to log
+                        LOG.info("unknown {} request has been failed", dsxEvent.sourceEvent);
+                        return;
+                    default:
+                }
             }
         }
+        LOG.debug("unknown message received: {}", message.toString());
     }
 
     @Override
@@ -98,7 +99,7 @@ public class DsxStreamingService extends JsonNettyStreamingService {
         DsxChannelInfo channelInfo = DsxSubscriptionHelper.parseChannelName(channelName);
         DsxWebSocketSubscriptionMessage message = channelInfo.getChannel().subscriptionMessageCreator.apply(channelInfo, args);
         requests.put(message.getRid(), channelInfo);
-        LOG.info("{} subscription message has been generated {}", channelInfo, message.getRid());
+        LOG.info("subscription message for channel {} has been generated {}", channelName, message.getRid());
         return objectMapper.writeValueAsString(message);
     }
 
@@ -107,7 +108,7 @@ public class DsxStreamingService extends JsonNettyStreamingService {
         DsxChannelInfo channelInfo = DsxSubscriptionHelper.parseChannelName(channelName);
         DsxWebSocketSubscriptionMessage message = DsxSubscriptionHelper.createBaseSubscriptionMessage(channelInfo, DsxEventType.unsubscribe);
         requests.put(message.getRid(), channelInfo);
-        LOG.info("{} unsubscription message has been generated {}", channelInfo, message.getRid());
+        LOG.info("unsubscription message for channel {} has been generated {}", channelName, message.getRid());
         return objectMapper.writeValueAsString(message);
     }
 }

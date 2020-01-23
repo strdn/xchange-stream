@@ -62,7 +62,7 @@ public class DsxOrderBook {
         throw new ExchangeException("Incorrect event type:" + message.getEvent());
     }
 
-    private DsxOrderBook updateOrderBook(DsxOrderbookMessage message) {
+    public DsxOrderBook updateOrderBook(DsxOrderbookMessage message) {
         if (message.getTimestamp() < this.getTimestamp()) {
             return this;
         } else {

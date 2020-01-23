@@ -1,6 +1,7 @@
 package info.bitrich.xchangestream.dsx.dto.messages;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import info.bitrich.xchangestream.dsx.dto.DsxOrderBook;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxChannel;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxEventType;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxInstrumentType;
@@ -41,4 +42,12 @@ public class DsxOrderbookMessage extends InstrumentMessage {
     public long getTimestamp() {
         return timestamp;
     }
+
+    public DsxOrderBook toDsxOrderBook(DsxOrderBook orderbook) {
+        if (getEvent() == DsxEventType.update) {
+            return orderbook.updateOrderBook(this);
+        }
+        return new DsxOrderBook(this);
+    }
+
 }
