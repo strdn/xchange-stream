@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 public class DsxManualExample {
     private static final Logger LOG = LoggerFactory.getLogger(DsxManualExample.class);
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         StreamingExchange exchange = StreamingExchangeFactory.INSTANCE.createExchange(DsxStreamingExchange.class
                 .getName());
 
@@ -22,22 +22,18 @@ public class DsxManualExample {
             LOG.info("First ask: {}", orderBook.getAsks().get(0));
             LOG.info("First bid: {}", orderBook.getBids().get(0));
         }, throwable -> LOG.error("ERROR in getting order book: ", throwable));
-        Disposable tradesObserver = exchange.getStreamingMarketDataService().getTrades(CurrencyPair.BTC_USD).subscribe(trade -> {
-            LOG.info(trade.toString());
-        }, throwable -> LOG.error("ERROR in getting trades: ", throwable));
-        Disposable tickerObserver = exchange.getStreamingMarketDataService().getTicker(CurrencyPair.BTC_USD).subscribe(ticker -> {
-            LOG.info(ticker.toString());
-        }, throwable -> LOG.error("ERROR in getting ticker: ", throwable));
 
-        try {
-            Thread.sleep(1000000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
+        Thread.sleep(10000);
         orderBookObserver.dispose();
-        tradesObserver.dispose();
-        tickerObserver.dispose();
+
+        orderBookObserver = exchange.getStreamingMarketDataService().getOrderBook(CurrencyPair.BTC_USD).subscribe(orderBook -> {
+            LOG.info("First ask: {}", orderBook.getAsks().get(0));
+            LOG.info("First bid: {}", orderBook.getBids().get(0));
+        }, throwable -> LOG.error("ERROR in getting order book: ", throwable));
+
+        Thread.sleep(10000);
+        orderBookObserver.dispose();
+
         exchange.disconnect().subscribe(() -> LOG.info("Disconnected"));
     }
 }
