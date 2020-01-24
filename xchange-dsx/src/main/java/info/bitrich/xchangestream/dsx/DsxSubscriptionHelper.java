@@ -37,7 +37,7 @@ public class DsxSubscriptionHelper {
         return new DsxWebSocketTradeSubscriptionMessage(
                 generateRequestId(),
                 DsxEventType.subscribe,
-                DsxChannel.book,
+                DsxChannel.trade,
                 channelInfo.getInstrumentType(),
                 channelInfo.getInstrument(),
                 getIndexedValue("previous deal count", args, 1, Integer.class, DEFAULT_PREV_DEALS_COUNT_VALUE));

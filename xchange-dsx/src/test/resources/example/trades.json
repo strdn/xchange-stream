@@ -1,5 +1,5 @@
 {
-  "channel": "trades",
+  "channel": "trade",
   "instrument": "btdusd",
   "event": "update",
   "trades": [
