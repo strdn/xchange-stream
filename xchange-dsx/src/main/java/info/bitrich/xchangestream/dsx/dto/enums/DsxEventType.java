@@ -4,10 +4,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 
-import static info.bitrich.xchangestream.dsx.dto.enums.DsxChannel.book;
-import static info.bitrich.xchangestream.dsx.dto.enums.DsxChannel.ticker;
-import static info.bitrich.xchangestream.dsx.dto.enums.DsxChannel.trade;
-
 /**
  * @author rimalon
  */

@@ -1,11 +1,9 @@
 package info.bitrich.xchangestream.dsx.dto.enums;
 
+import info.bitrich.xchangestream.dsx.DsxSubscriptionHelper;
 import info.bitrich.xchangestream.dsx.DsxSubscriptionHelper.TriFunction;
 import info.bitrich.xchangestream.dsx.dto.DsxChannelInfo;
 import info.bitrich.xchangestream.dsx.dto.messages.DsxWebSocketSubscriptionMessage;
-import info.bitrich.xchangestream.dsx.DsxSubscriptionHelper;
-
-import java.util.function.BiFunction;
 
 import static info.bitrich.xchangestream.dsx.dto.enums.DsxEventType.subscribeBook;
 import static info.bitrich.xchangestream.dsx.dto.enums.DsxEventType.subscribeTicker;
