@@ -10,7 +10,7 @@ import org.knowm.xchange.dsx.dto.marketdata.DSXTicker;
 /**
  * @author rimalon
  */
-public class DsxTikerMessage extends InstrumentMessage {
+public class DsxTikerMessage extends InstrumentChannelMessage {
     private final DSXTicker ticker;
 
     @JsonCreator

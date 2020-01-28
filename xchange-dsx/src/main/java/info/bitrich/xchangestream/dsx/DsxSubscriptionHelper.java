@@ -4,7 +4,7 @@ import info.bitrich.xchangestream.dsx.dto.DsxChannelInfo;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxChannel;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxEventType;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxInstrumentType;
-import info.bitrich.xchangestream.dsx.dto.messages.DsxWebSocketOrderbookSubscriptionMessage;
+import info.bitrich.xchangestream.dsx.dto.messages.DsxWebSocketBookSubscriptionMessage;
 import info.bitrich.xchangestream.dsx.dto.messages.DsxWebSocketSubscriptionMessage;
 import info.bitrich.xchangestream.dsx.dto.messages.DsxWebSocketTradeSubscriptionMessage;
 import org.apache.commons.lang3.StringUtils;
@@ -23,21 +23,24 @@ public class DsxSubscriptionHelper {
 
     public final static String CHANNEL_DELIMITER = "-";
 
-    public static DsxWebSocketOrderbookSubscriptionMessage createOrderbookSubscriptionMessage(DsxChannelInfo channelInfo, Object[] args) {
-        return new DsxWebSocketOrderbookSubscriptionMessage(
+    @FunctionalInterface
+    public interface TriFunction<S, T, U, R> {
+        R apply(S s, T t, U u);
+    }
+
+    public static DsxWebSocketBookSubscriptionMessage createBookSubscriptionMessage(DsxChannelInfo channelInfo, DsxEventType eventType, Object[] args) {
+        return new DsxWebSocketBookSubscriptionMessage(
                 generateRequestId(),
-                DsxEventType.subscribe,
-                DsxChannel.book,
+                eventType,
                 channelInfo.getInstrumentType(),
                 channelInfo.getInstrument(),
                 getIndexedValue("order book depth limit", args, 1, Integer.class, DEFAULT_LIMIT_VALUE));
     }
 
-    public static DsxWebSocketTradeSubscriptionMessage createTradeSubscriptionMessage(DsxChannelInfo channelInfo, Object[] args) {
+    public static DsxWebSocketTradeSubscriptionMessage createTradeSubscriptionMessage(DsxChannelInfo channelInfo, DsxEventType event, Object[] args) {
         return new DsxWebSocketTradeSubscriptionMessage(
                 generateRequestId(),
-                DsxEventType.subscribe,
-                DsxChannel.trade,
+                event,
                 channelInfo.getInstrumentType(),
                 channelInfo.getInstrument(),
                 getIndexedValue("previous deal count", args, 1, Integer.class, DEFAULT_PREV_DEALS_COUNT_VALUE));
@@ -47,7 +50,6 @@ public class DsxSubscriptionHelper {
         return new DsxWebSocketSubscriptionMessage(
                 generateRequestId(),
                 eventType,
-                channelInfo.getChannel(),
                 channelInfo.getInstrumentType(),
                 channelInfo.getInstrument()
         );

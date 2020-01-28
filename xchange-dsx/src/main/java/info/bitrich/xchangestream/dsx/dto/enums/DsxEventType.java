@@ -4,31 +4,32 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 
+import static info.bitrich.xchangestream.dsx.dto.enums.DsxChannel.book;
+import static info.bitrich.xchangestream.dsx.dto.enums.DsxChannel.ticker;
+import static info.bitrich.xchangestream.dsx.dto.enums.DsxChannel.trade;
+
 /**
  * @author rimalon
  */
 public enum DsxEventType {
     heartbeat,
 
-    subscribe,
-    subscribed(subscribe),
-    unsubscribe,
-    unsubscribed(unsubscribe),
-    subscriptionFailed(subscribe),
-    unsubscriptionFailed(unsubscribe),
+    subscribeBook,
+    subscribeTrade,
+    subscribeTicker,
+
+    subscribed,
+    subscriptionFailed,
+
+    unsubscribeBook,
+    unsubscribeTrade,
+    unsubscribeTicker,
+
+    unsubscribed,
+    unsubscriptionFailed,
 
     snapshot,
     update;
-
-    public final DsxEventType sourceEvent;
-
-    DsxEventType() {
-        this(null);
-    }
-
-    DsxEventType(DsxEventType sourceEvent) {
-        this.sourceEvent = sourceEvent;
-    }
 
     public static DsxEventType getEvent(String event) {
         return Arrays.stream(DsxEventType.values())

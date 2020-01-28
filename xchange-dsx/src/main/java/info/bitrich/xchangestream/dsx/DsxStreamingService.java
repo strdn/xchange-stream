@@ -81,17 +81,17 @@ public class DsxStreamingService extends JsonNettyStreamingService {
             Long requestId = message.get(JSON_REQUEST_ID).asLong();
             DsxChannelInfo channelInfo = requests.remove(requestId);
             if (channelInfo != null) {
-                LOG.info("Request '{}' for channel '{}' has been processed. Result: '{}'", event.sourceEvent, channelInfo, event);
+                LOG.info("Request for channel '{}' has been processed. Result: '{}'", channelInfo, event);
                 return;
             }
         }
-        LOG.info("Unknown request '{}' has been successfully processed. Result: '{}'. Message: {}", event.sourceEvent, event, message.toString());
+        LOG.warn("Unknown request has been successfully processed. Result: '{}'. Message: {}", event, message.toString());
     }
 
     @Override
     public String getSubscribeMessage(String channelName, Object... args) throws IOException {
         DsxChannelInfo channelInfo = DsxSubscriptionHelper.parseChannelName(channelName);
-        DsxWebSocketSubscriptionMessage message = channelInfo.getChannel().subscriptionMessageCreator.apply(channelInfo, args);
+        DsxWebSocketSubscriptionMessage message = channelInfo.getChannel().subscriptionMessageCreator.apply(channelInfo, channelInfo.getChannel().subscriptionEvent, args);
         requests.put(message.getRid(), channelInfo);
         LOG.info("Subscription message for channel {} has been generated. RequestId {}", channelName, message.getRid());
         return objectMapper.writeValueAsString(message);
@@ -100,7 +100,7 @@ public class DsxStreamingService extends JsonNettyStreamingService {
     @Override
     public String getUnsubscribeMessage(String channelName) throws IOException {
         DsxChannelInfo channelInfo = DsxSubscriptionHelper.parseChannelName(channelName);
-        DsxWebSocketSubscriptionMessage message = DsxSubscriptionHelper.createBaseSubscriptionMessage(channelInfo, DsxEventType.unsubscribe);
+        DsxWebSocketSubscriptionMessage message = DsxSubscriptionHelper.createBaseSubscriptionMessage(channelInfo, channelInfo.getChannel().unsubscriptionEvent);
         requests.put(message.getRid(), channelInfo);
         LOG.info("Unsubscription message for channel {} has been generated. RequestId {}", channelName, message.getRid());
         return objectMapper.writeValueAsString(message);

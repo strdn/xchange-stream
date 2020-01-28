@@ -9,7 +9,7 @@ import org.knowm.xchange.dsx.dto.marketdata.DSXTrade;
 /**
  * @author rimalon
  */
-public class DsxTradeMessage extends InstrumentMessage {
+public class DsxTradeMessage extends InstrumentChannelMessage {
     private final DSXTrade[] trades;
 
     public DsxTradeMessage(@JsonProperty("event") DsxEventType event, @JsonProperty("channel") DsxChannel channel,

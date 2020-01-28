@@ -13,10 +13,9 @@ public class DsxWebSocketSubscriptionMessage extends InstrumentMessage {
 
     public DsxWebSocketSubscriptionMessage(@JsonProperty("rid") long rid,
                                            @JsonProperty("event") DsxEventType event,
-                                           @JsonProperty("channel") DsxChannel channel,
                                            @JsonProperty("mode") DsxInstrumentType mode,
                                            @JsonProperty("instrument") String instrument) {
-        super(event, channel, instrument, mode);
+        super(event, instrument, mode);
         this.rid = rid;
     }
 

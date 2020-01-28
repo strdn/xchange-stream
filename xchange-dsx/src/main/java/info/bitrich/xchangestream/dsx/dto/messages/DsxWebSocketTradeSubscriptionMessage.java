@@ -13,11 +13,10 @@ public class DsxWebSocketTradeSubscriptionMessage extends DsxWebSocketSubscripti
 
     public DsxWebSocketTradeSubscriptionMessage(@JsonProperty("rid") long rid,
                                                 @JsonProperty("event") DsxEventType event,
-                                                @JsonProperty("channel") DsxChannel channel,
                                                 @JsonProperty("instrumentType") DsxInstrumentType instrumentType,
                                                 @JsonProperty("instrument") String instrument,
                                                 @JsonProperty("prevDealsCount") Integer prevDealsCount) {
-        super(rid, event, channel, instrumentType, instrument);
+        super(rid, event, instrumentType, instrument);
         this.prevDealsCount = prevDealsCount;
     }
 

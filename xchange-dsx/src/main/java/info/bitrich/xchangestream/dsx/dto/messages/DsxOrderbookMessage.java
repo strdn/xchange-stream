@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * @author rimalon
  */
-public class DsxOrderbookMessage extends InstrumentMessage {
+public class DsxOrderbookMessage extends InstrumentChannelMessage {
     private final List<BigDecimal[]> asks;
     private final List<BigDecimal[]> bids;
     private final long timestamp;
