@@ -1,16 +1,18 @@
 {
+  "event": "snapshot",
+  "instrumentType": "LIVE",
+  "ticker": {
+    "high": 3200,
+    "low": 3200,
+    "avg": 0.0003125,
+    "vol": 0.00875,
+    "vol_cur": 28,
+    "last": 3200,
+    "buy": 3000,
+    "sell": 3200,
+    "updated": 1580898822,
+    "pair": "btcusd"
+  },
   "channel": "ticker",
-  "event": "update",
-  "high": 8734.99658,
-  "low": 8500.46676,
-  "avg": 0.00012,
-  "vol": 46.89362482,
-  "vol_cur": 405107.6216098208215,
-  "last": 8685.60093,
-  "buy": 8685.62400,
-  "sell": 8734.98011,
-  "updated": 1579521774,
-  "dailyChange": 5.12,
-  "dailyChangeInPercents": 0.4,
-  "pair": "btcusd"
+  "instrument": "btcusd"
 }

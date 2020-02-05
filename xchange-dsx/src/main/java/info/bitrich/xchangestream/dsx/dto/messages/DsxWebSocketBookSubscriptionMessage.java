@@ -1,20 +1,19 @@
 package info.bitrich.xchangestream.dsx.dto.messages;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxEventType;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxInstrumentType;
+
+import java.beans.ConstructorProperties;
 
 /**
  * @author rimalon
  */
 public class DsxWebSocketBookSubscriptionMessage extends DsxWebSocketSubscriptionMessage {
     private final Integer limit;
-    public DsxWebSocketBookSubscriptionMessage(@JsonProperty("rid") long rid,
-                                               @JsonProperty("event") DsxEventType event,
-                                               @JsonProperty("instrumentType") DsxInstrumentType instrumentType,
-                                               @JsonProperty("instrument") String instrument,
-                                               @JsonProperty("limit") Integer limit) {
-        super(rid, event, instrumentType, instrument);
+
+    @ConstructorProperties({"rid", "event", "instrument", "instrumentType", "limit"})
+    public DsxWebSocketBookSubscriptionMessage(long rid, DsxEventType event, String instrument, DsxInstrumentType instrumentType, Integer limit) {
+        super(rid, event, instrument, instrumentType);
         this.limit = limit;
     }
 

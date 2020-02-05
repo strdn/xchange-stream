@@ -1,8 +1,9 @@
 package info.bitrich.xchangestream.dsx.dto.messages;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxEventType;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxInstrumentType;
+
+import java.beans.ConstructorProperties;
 
 /**
  * @author rimalon
@@ -11,8 +12,8 @@ public class InstrumentMessage extends DsxEventMessage {
     private final DsxInstrumentType instrumentType;
     private final String instrument;
 
-    public InstrumentMessage(@JsonProperty("event") DsxEventType event, @JsonProperty("instrument") String instrument,
-                             @JsonProperty("instrumentType") DsxInstrumentType instrumentType) {
+    @ConstructorProperties({"event", "instrument", "instrumentType"})
+    public InstrumentMessage(DsxEventType event, String instrument, DsxInstrumentType instrumentType) {
         super(event);
         this.instrument = instrument;
         this.instrumentType = instrumentType;

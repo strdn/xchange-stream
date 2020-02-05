@@ -1,26 +1,14 @@
 {
   "event": "update",
   "channel": "book",
-  "instrument": "btdusd",
-  "asks": [
-    [
-      103.3,
-      0.15
-    ],
-    [
-      103.5,
-      0
-    ]
-  ],
+  "instrument": "btceur",
+  "instrumentType": "LIVE",
+  "asks": [],
   "bids": [
     [
-      103.2,
-      0
-    ],
-    [
-      101.082,
-      0.4653
+      2250,
+      18
     ]
   ],
-  "timestamp": 12345678
+  "timestamp": 1580901445323
 }

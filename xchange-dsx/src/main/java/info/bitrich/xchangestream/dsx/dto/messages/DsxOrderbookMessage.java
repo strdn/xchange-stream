@@ -1,11 +1,11 @@
 package info.bitrich.xchangestream.dsx.dto.messages;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import info.bitrich.xchangestream.dsx.dto.DsxOrderBook;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxChannel;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxEventType;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxInstrumentType;
 
+import java.beans.ConstructorProperties;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -17,14 +17,9 @@ public class DsxOrderbookMessage extends InstrumentChannelMessage {
     private final List<BigDecimal[]> bids;
     private final long timestamp;
 
-    public DsxOrderbookMessage(
-            @JsonProperty("event") DsxEventType event,
-            @JsonProperty("channel") DsxChannel channel,
-            @JsonProperty("instrumentType") DsxInstrumentType instrumentType,
-            @JsonProperty("instrument") String instrument,
-            @JsonProperty("limit") List<BigDecimal[]> asks,
-            @JsonProperty("bids") List<BigDecimal[]> bids,
-            @JsonProperty("timestamp") long timestamp) {
+    @ConstructorProperties({"event", "channel", "instrument", "instrumentType", "asks", "bids", "timestamp"})
+    public DsxOrderbookMessage(DsxEventType event, DsxChannel channel, String instrument, DsxInstrumentType instrumentType,
+                               List<BigDecimal[]> asks, List<BigDecimal[]> bids, long timestamp) {
         super(event, channel, instrument, instrumentType);
         this.asks = asks;
         this.bids = bids;

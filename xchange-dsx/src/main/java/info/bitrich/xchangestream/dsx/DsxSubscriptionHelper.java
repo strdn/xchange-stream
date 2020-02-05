@@ -12,7 +12,6 @@ import org.knowm.xchange.currency.CurrencyPair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Objects;
 import java.util.UUID;
 
 public class DsxSubscriptionHelper {
@@ -33,8 +32,7 @@ public class DsxSubscriptionHelper {
         return new DsxWebSocketBookSubscriptionMessage(
                 generateRequestId(),
                 eventType,
-                channelInfo.getInstrumentType(),
-                channelInfo.getInstrument(),
+                channelInfo.getInstrument(), channelInfo.getInstrumentType(),
                 getIndexedValue("order book depth limit", args, 1, Integer.class, DEFAULT_LIMIT_VALUE));
     }
 
@@ -44,20 +42,11 @@ public class DsxSubscriptionHelper {
         if (lastTradeId != null && lastTradeId == 0) {
             lastTradeId = previousDealId;
         }
-        return new DsxWebSocketTradeSubscriptionMessage(
-                generateRequestId(),
-                event,
-                channelInfo.getInstrumentType(),
-                channelInfo.getInstrument(),
-                lastTradeId);
+        return new DsxWebSocketTradeSubscriptionMessage(generateRequestId(), event, channelInfo.getInstrument(), channelInfo.getInstrumentType(), lastTradeId);
     }
 
     public static DsxWebSocketSubscriptionMessage createBaseSubscriptionMessage(DsxChannelInfo channelInfo, DsxEventType eventType) {
-        return new DsxWebSocketSubscriptionMessage(
-                generateRequestId(),
-                eventType,
-                channelInfo.getInstrumentType(),
-                channelInfo.getInstrument()
+        return new DsxWebSocketSubscriptionMessage(generateRequestId(), eventType, channelInfo.getInstrument(), channelInfo.getInstrumentType()
         );
     }
 

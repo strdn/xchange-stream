@@ -1,0 +1,7 @@
+{
+  "rid": 2063172180411172740,
+  "event": "subscribeBook",
+  "instrument": "btcusd",
+  "instrumentType": "LIVE",
+  "limit": 1
+}
