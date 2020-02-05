@@ -8,6 +8,7 @@ public class DsxChannelInfo {
     private DsxChannel channel;
     private String instrument;
     private DsxInstrumentType instrumentType;
+    private Long lastTradeId = 0L;
 
     public DsxChannelInfo(DsxChannel channel, String instrument, DsxInstrumentType instrumentType) {
         this.channel = channel;
@@ -25,6 +26,14 @@ public class DsxChannelInfo {
 
     public DsxInstrumentType getInstrumentType() {
         return instrumentType;
+    }
+
+    public Long getLastTradeId() {
+        return lastTradeId;
+    }
+
+    public void setLastTradeId(Long lastTradeId) {
+        this.lastTradeId = lastTradeId;
     }
 
     @Override

@@ -22,18 +22,21 @@ public class DsxManualExample {
         Disposable orderBookObserver = exchange.getStreamingMarketDataService().getOrderBook(CurrencyPair.BTC_USD, DsxInstrumentType.LIVE, 1).subscribe(orderBook -> {
             LOG.info("First ask: {}", orderBook.getAsks().get(0));
             LOG.info("First bid: {}", orderBook.getBids().get(0));
-        }, throwable -> LOG.error("ERROR in getting order book: ", throwable));
+        }, throwable -> LOG.error("Error in getting order book: ", throwable));
+
+
+        Disposable tradeObserver = exchange.getStreamingMarketDataService().getTrades(CurrencyPair.BTC_USD, DsxInstrumentType.LIVE).subscribe(trade -> {
+            LOG.info("Trade: {}", trade);
+        }, throwable -> LOG.error("Error in getting trade: ", throwable));
+
+        Disposable tickerObserver = exchange.getStreamingMarketDataService().getTicker(CurrencyPair.BTC_USD, DsxInstrumentType.LIVE).subscribe(ticker -> {
+            LOG.info("Ticker: {}", ticker);
+        }, throwable -> LOG.error("Error in getting ticker: ", throwable));
+
 
         Thread.sleep(10000);
         orderBookObserver.dispose();
-
-
-        orderBookObserver = exchange.getStreamingMarketDataService().getOrderBook(CurrencyPair.BTC_USD, DsxInstrumentType.LIVE, 1).subscribe(orderBook -> {
-            LOG.info("First ask: {}", orderBook.getAsks().get(0));
-            LOG.info("First bid: {}", orderBook.getBids().get(0));
-        }, throwable -> LOG.error("ERROR in getting order book: ", throwable));
-
-        Thread.sleep(100000);
+        tradeObserver.dispose();
 
         exchange.disconnect().subscribe(() -> LOG.info("Disconnected"));
     }

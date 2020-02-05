@@ -23,6 +23,7 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static info.bitrich.xchangestream.dsx.DsxSubscriptionHelper.createChannelName;
 

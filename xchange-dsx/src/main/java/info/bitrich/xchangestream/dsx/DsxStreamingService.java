@@ -91,6 +91,7 @@ public class DsxStreamingService extends JsonNettyStreamingService {
     @Override
     public String getSubscribeMessage(String channelName, Object... args) throws IOException {
         DsxChannelInfo channelInfo = DsxSubscriptionHelper.parseChannelName(channelName);
+        channelInfo.setLastTradeId(lastTradeId);
         DsxWebSocketSubscriptionMessage message = channelInfo.getChannel().subscriptionMessageCreator.apply(channelInfo, channelInfo.getChannel().subscriptionEvent, args);
         requests.put(message.getRid(), channelInfo);
         LOG.info("Subscription message for channel {} has been generated. RequestId {}", channelName, message.getRid());
