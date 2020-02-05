@@ -76,7 +76,7 @@ public class DsxStreamingMarketDataService implements StreamingMarketDataService
                                         .collect(Collectors.toList())
                         )
                 )
-                .doOnNext(trade -> service.setLastTradeId(trade.getTid()))
+                .doOnNext(trade -> service.setLastTradeId(channelName, trade.getTid()))
                 .map(trade -> DSXAdapters.adaptTrade(trade, currencyPair));
     }
 

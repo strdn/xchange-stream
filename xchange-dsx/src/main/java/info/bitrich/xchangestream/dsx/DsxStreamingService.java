@@ -10,8 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static info.bitrich.xchangestream.dsx.DsxSubscriptionHelper.CHANNEL_DELIMITER;
 
@@ -26,9 +26,8 @@ public class DsxStreamingService extends JsonNettyStreamingService {
     private static final String JSON_INSTRUMENT = "instrument";
     private static final String JSON_INSTRUMENT_TYPE = "instrumentType";
 
-    private final Map<Long, DsxChannelInfo> requests = new HashMap<>();
-
-    private volatile long lastTradeId = 0;
+    private final Map<Long, DsxChannelInfo> requests = new ConcurrentHashMap<>();
+    private final Map<String, Long> lastTradeIds = new ConcurrentHashMap<>();
 
     public DsxStreamingService(String apiUrl) {
         super(apiUrl, Integer.MAX_VALUE);
@@ -39,8 +38,8 @@ public class DsxStreamingService extends JsonNettyStreamingService {
         return null;
     }
 
-    public void setLastTradeId(long lastTradeId) {
-        this.lastTradeId = lastTradeId;
+    public void setLastTradeId(String channelName, long lastTradeId) {
+        this.lastTradeIds.put(channelName, lastTradeId);
     }
 
     @Override
@@ -97,7 +96,7 @@ public class DsxStreamingService extends JsonNettyStreamingService {
     @Override
     public String getSubscribeMessage(String channelName, Object... args) throws IOException {
         DsxChannelInfo channelInfo = DsxSubscriptionHelper.parseChannelName(channelName);
-        channelInfo.setLastTradeId(lastTradeId);
+        channelInfo.setLastTradeId(lastTradeIds.computeIfAbsent(channelName, chName -> 0L));
         DsxWebSocketSubscriptionMessage message = channelInfo.getChannel().subscriptionMessageCreator.apply(channelInfo, channelInfo.getChannel().subscriptionEvent, args);
         requests.put(message.getRid(), channelInfo);
         LOG.info("Subscription message for channel {} has been generated. RequestId {}", channelName, message.getRid());
