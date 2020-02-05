@@ -14,8 +14,8 @@ import static info.bitrich.xchangestream.dsx.dto.enums.DsxEventType.unsubscribeT
 
 public enum DsxChannel {
     book(subscribeBook, unsubscribeBook, DsxSubscriptionHelper::createBookSubscriptionMessage),
-    ticker(subscribeTrade, unsubscribeTrade, (channelInfo, event, objects) -> DsxSubscriptionHelper.createBaseSubscriptionMessage(channelInfo, event)),
-    trade(subscribeTicker, unsubscribeTicker, DsxSubscriptionHelper::createTradeSubscriptionMessage);
+    ticker(subscribeTicker, unsubscribeTicker, (channelInfo, event, objects) -> DsxSubscriptionHelper.createBaseSubscriptionMessage(channelInfo, event)),
+    trade(subscribeTrade, unsubscribeTrade, DsxSubscriptionHelper::createTradeSubscriptionMessage);
 
     public final DsxEventType subscriptionEvent;
     public final DsxEventType unsubscriptionEvent;

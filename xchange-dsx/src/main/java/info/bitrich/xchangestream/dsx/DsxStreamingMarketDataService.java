@@ -12,6 +12,7 @@ import info.bitrich.xchangestream.service.netty.StreamingObjectMapperHelper;
 import io.reactivex.Observable;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dsx.DSXAdapters;
+import org.knowm.xchange.dsx.dto.marketdata.DSXTrade;
 import org.knowm.xchange.dto.marketdata.OrderBook;
 import org.knowm.xchange.dto.marketdata.Ticker;
 import org.knowm.xchange.dto.marketdata.Trade;
@@ -21,6 +22,8 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Date;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -66,7 +69,14 @@ public class DsxStreamingMarketDataService implements StreamingMarketDataService
         return jsonNodeObservable
                 .map(jsonNode -> mapper.readValue(jsonNode.toString(), DsxTradeMessage.class))
                 .map(DsxTradeMessage::getTrades)
-                .flatMap(Observable::fromArray)
+                .flatMap(trades ->
+                        Observable.fromIterable(
+                                Arrays.stream(trades)
+                                        .sorted(Comparator.comparingLong(DSXTrade::getTid))
+                                        .collect(Collectors.toList())
+                        )
+                )
+                .doOnNext(trade -> service.setLastTradeId(trade.getTid()))
                 .map(trade -> DSXAdapters.adaptTrade(trade, currencyPair));
     }
 

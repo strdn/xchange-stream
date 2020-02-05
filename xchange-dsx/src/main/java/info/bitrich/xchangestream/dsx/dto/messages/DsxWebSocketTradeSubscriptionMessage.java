@@ -8,18 +8,18 @@ import info.bitrich.xchangestream.dsx.dto.enums.DsxInstrumentType;
  * @author rimalon
  */
 public class DsxWebSocketTradeSubscriptionMessage extends DsxWebSocketSubscriptionMessage {
-    private final Integer prevDealsCount;
+    private final Long prevDealId;
 
     public DsxWebSocketTradeSubscriptionMessage(@JsonProperty("rid") long rid,
                                                 @JsonProperty("event") DsxEventType event,
                                                 @JsonProperty("instrumentType") DsxInstrumentType instrumentType,
                                                 @JsonProperty("instrument") String instrument,
-                                                @JsonProperty("prevDealsCount") Integer prevDealsCount) {
+                                                @JsonProperty("prevDealId") Long prevDealId) {
         super(rid, event, instrumentType, instrument);
-        this.prevDealsCount = prevDealsCount;
+        this.prevDealId = prevDealId;
     }
 
-    public Integer getPrevDealsCount() {
-        return prevDealsCount;
+    public Long getPrevDealId() {
+        return prevDealId;
     }
 }

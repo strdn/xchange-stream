@@ -12,6 +12,7 @@ import org.knowm.xchange.currency.CurrencyPair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public class DsxSubscriptionHelper {
@@ -19,7 +20,7 @@ public class DsxSubscriptionHelper {
     private static final Logger LOG = LoggerFactory.getLogger(DsxSubscriptionHelper.class);
 
     private final static int DEFAULT_LIMIT_VALUE = 100;
-    private final static int DEFAULT_PREV_DEALS_COUNT_VALUE = 100;
+    private final static long DEFAULT_PREV_DEALS_ID_VALUE = 0;
 
     public final static String CHANNEL_DELIMITER = "-";
 
@@ -38,12 +39,17 @@ public class DsxSubscriptionHelper {
     }
 
     public static DsxWebSocketTradeSubscriptionMessage createTradeSubscriptionMessage(DsxChannelInfo channelInfo, DsxEventType event, Object[] args) {
+        Long previousDealId = getIndexedValue("previous deal id", args, 1, Long.class, DEFAULT_PREV_DEALS_ID_VALUE);
+        Long lastTradeId = channelInfo.getLastTradeId();
+        if (lastTradeId != null && lastTradeId == 0) {
+            lastTradeId = previousDealId;
+        }
         return new DsxWebSocketTradeSubscriptionMessage(
                 generateRequestId(),
                 event,
                 channelInfo.getInstrumentType(),
                 channelInfo.getInstrument(),
-                getIndexedValue("previous deal count", args, 1, Integer.class, DEFAULT_PREV_DEALS_COUNT_VALUE));
+                lastTradeId);
     }
 
     public static DsxWebSocketSubscriptionMessage createBaseSubscriptionMessage(DsxChannelInfo channelInfo, DsxEventType eventType) {

@@ -28,6 +28,8 @@ public class DsxStreamingService extends JsonNettyStreamingService {
 
     private final Map<Long, DsxChannelInfo> requests = new HashMap<>();
 
+    private volatile long lastTradeId = 0;
+
     public DsxStreamingService(String apiUrl) {
         super(apiUrl, Integer.MAX_VALUE);
     }
@@ -35,6 +37,10 @@ public class DsxStreamingService extends JsonNettyStreamingService {
     @Override
     protected WebSocketClientExtensionHandler getWebSocketClientExtensionHandler() {
         return null;
+    }
+
+    public void setLastTradeId(long lastTradeId) {
+        this.lastTradeId = lastTradeId;
     }
 
     @Override
