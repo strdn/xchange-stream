@@ -8,7 +8,7 @@ import java.beans.ConstructorProperties;
 /**
  * @author rimalon
  */
-public class DsxWebSocketBookSubscriptionMessage extends DsxWebSocketSubscriptionMessage {
+public class DsxWebSocketBookSubscriptionMessage extends DsxWebSocketInstrumentSubscriptionMessage {
     private final Integer limit;
 
     @ConstructorProperties({"rid", "event", "instrument", "instrumentType", "limit"})

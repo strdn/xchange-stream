@@ -24,6 +24,7 @@ public enum DsxEventType {
     unsubscribed,
     unsubscriptionFailed,
 
+    authorize,
     snapshot,
     update;
 

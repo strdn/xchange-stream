@@ -3,8 +3,10 @@ package info.bitrich.xchangestream.dsx;
 import info.bitrich.xchangestream.core.ProductSubscription;
 import info.bitrich.xchangestream.core.StreamingExchange;
 import info.bitrich.xchangestream.core.StreamingMarketDataService;
+import info.bitrich.xchangestream.core.StreamingTradeService;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
+import org.apache.commons.lang3.StringUtils;
 import org.knowm.xchange.ExchangeSpecification;
 import org.knowm.xchange.hitbtc.v2.HitbtcExchange;
 
@@ -14,17 +16,26 @@ import org.knowm.xchange.hitbtc.v2.HitbtcExchange;
 public class DsxStreamingExchange extends HitbtcExchange implements StreamingExchange {
     private static final String API_URI = "ws://localhost:8080/stream";
 
-    private final DsxStreamingService streamingService;
+    private DsxStreamingService streamingService;
     private DsxStreamingMarketDataService streamingMarketDataService;
-
-    public DsxStreamingExchange() {
-        this.streamingService = new DsxStreamingService(API_URI);
-    }
+    private DsxStreamingTradeService streamingTradeService;
 
     @Override
     protected void initServices() {
         super.initServices();
-        streamingMarketDataService = new DsxStreamingMarketDataService(streamingService);
+        this.streamingService = createStreamingService();
+        this.streamingMarketDataService = new DsxStreamingMarketDataService(streamingService);
+        this.streamingTradeService = new DsxStreamingTradeService(streamingService);
+    }
+
+    private DsxStreamingService createStreamingService() {
+        DsxStreamingService streamingService = new DsxStreamingService(API_URI, getNonceFactory());
+        applyStreamingSpecification(getExchangeSpecification(), streamingService);
+        if (StringUtils.isNotEmpty(exchangeSpecification.getApiKey())) {
+            streamingService.setApiKey(exchangeSpecification.getApiKey());
+            streamingService.setApiSecret(exchangeSpecification.getSecretKey());
+        }
+        return streamingService;
     }
 
     @Override
@@ -63,6 +74,14 @@ public class DsxStreamingExchange extends HitbtcExchange implements StreamingExc
     @Override
     public StreamingMarketDataService getStreamingMarketDataService() {
         return streamingMarketDataService;
+    }
+
+    @Override
+    public StreamingTradeService getStreamingTradeService() {
+        if (streamingService.isAuthDataProvided()) {
+            streamingService.authorize();
+        }
+        return streamingTradeService;
     }
     
     @Override

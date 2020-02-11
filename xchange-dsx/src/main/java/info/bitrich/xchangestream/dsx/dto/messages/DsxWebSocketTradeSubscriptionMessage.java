@@ -8,7 +8,7 @@ import java.beans.ConstructorProperties;
 /**
  * @author rimalon
  */
-public class DsxWebSocketTradeSubscriptionMessage extends DsxWebSocketSubscriptionMessage {
+public class DsxWebSocketTradeSubscriptionMessage extends DsxWebSocketInstrumentSubscriptionMessage {
     private final Long prevDealId;
 
     @ConstructorProperties({"rid", "event", "instrument", "instrumentType", "prevDealId"})
