@@ -8,11 +8,14 @@ import io.reactivex.Observable;
 import org.knowm.xchange.ExchangeSpecification;
 import org.knowm.xchange.dsx.DSXExchange;
 
+import static info.bitrich.xchangestream.service.ConnectableService.BEFORE_CONNECTION_HANDLER;
+
 /**
  * @author rimalon
  */
 public class DsxStreamingExchange extends DSXExchange implements StreamingExchange {
     private static final String DEFAULT_API_URI = "ws://localhost:8080/stream";
+    public static final String DSX_SPEC_PARAMS_API_URI = "API_URI";
 
     private DsxStreamingService streamingService;
     private DsxStreamingMarketDataService streamingMarketDataService;
@@ -23,8 +26,9 @@ public class DsxStreamingExchange extends DSXExchange implements StreamingExchan
     @Override
     protected void initServices() {
         super.initServices();
-        Object apiURI = getExchangeSpecification().getExchangeSpecificParametersItem("API_URI");
+        Object apiURI = getExchangeSpecification().getExchangeSpecificParametersItem(DSX_SPEC_PARAMS_API_URI);
         streamingService = new DsxStreamingService(apiURI == null ? DEFAULT_API_URI : (String) apiURI);
+        streamingService.setBeforeConnectionHandler((Runnable) getExchangeSpecification().getExchangeSpecificParametersItem(BEFORE_CONNECTION_HANDLER));
         streamingMarketDataService = new DsxStreamingMarketDataService(streamingService);
     }
 
@@ -57,7 +61,6 @@ public class DsxStreamingExchange extends DSXExchange implements StreamingExchan
     public ExchangeSpecification getDefaultExchangeSpecification() {
         ExchangeSpecification spec = super.getDefaultExchangeSpecification();
         spec.setShouldLoadRemoteMetaData(false);
-
         return spec;
     }
 

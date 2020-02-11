@@ -17,7 +17,7 @@ public class DsxManualExample {
 
     public static void main(String[] args) throws InterruptedException {
         ExchangeSpecification specification = new ExchangeSpecification(DsxStreamingExchange.class);
-        specification.setExchangeSpecificParametersItem("API_URI", "ws://localhost:8080/stream");
+        specification.setExchangeSpecificParametersItem(DsxStreamingExchange.DSX_SPEC_PARAMS_API_URI, "ws://localhost:8080/stream");
         specification.setShouldLoadRemoteMetaData(false);
         StreamingExchange exchange = StreamingExchangeFactory.INSTANCE.createExchange(specification);
 
