@@ -125,7 +125,7 @@ public class DsxStreamingService extends JsonNettyStreamingService {
     public String getSubscribeMessage(String channelName, Object... args) throws IOException {
         DsxChannelInfo channelInfo = DsxSubscriptionHelper.parseChannelName(channelName);
         channelInfo.setLastTradeId(lastTradeIds.computeIfAbsent(channelName, chName -> 0L));
-        DsxWebSocketSubscriptionMessage message = channelInfo.getChannel().subscriptionMessageCreator.apply(channelInfo, channelInfo.getChannel().subscriptionEvent, args);
+        DsxWebSocketSubscriptionMessage message = channelInfo.getChannel().subscriptionMessageCreator.apply(channelInfo, DsxEventType.subscribe, args);
         requests.put(message.getRid(), channelInfo);
         LOG.info("Subscription message for channel {} has been generated. RequestId {}", channelName, message.getRid());
         return objectMapper.writeValueAsString(message);
@@ -134,7 +134,7 @@ public class DsxStreamingService extends JsonNettyStreamingService {
     @Override
     public String getUnsubscribeMessage(String channelName) throws IOException {
         DsxChannelInfo channelInfo = DsxSubscriptionHelper.parseChannelName(channelName);
-        DsxWebSocketSubscriptionMessage message = DsxSubscriptionHelper.createBaseSubscriptionMessage(channelInfo, channelInfo.getChannel().unsubscriptionEvent);
+        DsxWebSocketSubscriptionMessage message = DsxSubscriptionHelper.createBaseSubscriptionMessage(channelInfo, DsxEventType.unsubscribe);
         requests.put(message.getRid(), channelInfo);
         LOG.info("Unsubscription message for channel {} has been generated. RequestId {}", channelName, message.getRid());
         return objectMapper.writeValueAsString(message);

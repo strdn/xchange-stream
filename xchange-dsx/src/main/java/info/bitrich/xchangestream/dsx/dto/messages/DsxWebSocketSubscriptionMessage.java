@@ -1,5 +1,6 @@
 package info.bitrich.xchangestream.dsx.dto.messages;
 
+import info.bitrich.xchangestream.dsx.dto.enums.DsxChannel;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxEventType;
 
 import java.beans.ConstructorProperties;

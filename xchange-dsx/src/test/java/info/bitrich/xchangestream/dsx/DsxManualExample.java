@@ -16,11 +16,10 @@ public class DsxManualExample {
     private static final Logger LOG = LoggerFactory.getLogger(DsxManualExample.class);
 
     public static void main(String[] args) throws InterruptedException {
-        ExchangeSpecification spec = StreamingExchangeFactory.INSTANCE.createExchange(
-                DsxStreamingExchange.class.getName()).getDefaultExchangeSpecification();
-        spec.setApiKey("dsx-apiKey");
-        spec.setSecretKey("dsx-apiSecret");
-        DsxStreamingExchange exchange = (DsxStreamingExchange) StreamingExchangeFactory.INSTANCE.createExchange(spec);
+        ExchangeSpecification specification = new ExchangeSpecification(DsxStreamingExchange.class);
+        specification.setExchangeSpecificParametersItem(DsxStreamingExchange.DSX_SPEC_PARAMS_API_URI, "ws://localhost:8080/stream");
+        specification.setShouldLoadRemoteMetaData(false);
+        StreamingExchange exchange = StreamingExchangeFactory.INSTANCE.createExchange(specification);
 
         exchange.connect().blockingAwait();
         Disposable orderBookObserver = exchange.getStreamingMarketDataService().getOrderBook(CurrencyPair.BTC_USD, DsxInstrumentType.LIVE, 1).subscribe(orderBook -> {
