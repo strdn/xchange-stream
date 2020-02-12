@@ -6,24 +6,29 @@ import info.bitrich.xchangestream.core.StreamingMarketDataService;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import org.knowm.xchange.ExchangeSpecification;
-import org.knowm.xchange.hitbtc.v2.HitbtcExchange;
+import org.knowm.xchange.dsx.DSXExchange;
+
+import static info.bitrich.xchangestream.service.ConnectableService.BEFORE_CONNECTION_HANDLER;
 
 /**
  * @author rimalon
  */
-public class DsxStreamingExchange extends HitbtcExchange implements StreamingExchange {
-    private static final String API_URI = "ws://localhost:8080/stream";
+public class DsxStreamingExchange extends DSXExchange implements StreamingExchange {
+    private static final String DEFAULT_API_URI = "ws://localhost:8080/stream";
+    public static final String DSX_SPEC_PARAMS_API_URI = "API_URI";
 
-    private final DsxStreamingService streamingService;
+    private DsxStreamingService streamingService;
     private DsxStreamingMarketDataService streamingMarketDataService;
 
     public DsxStreamingExchange() {
-        this.streamingService = new DsxStreamingService(API_URI);
     }
 
     @Override
     protected void initServices() {
         super.initServices();
+        Object apiURI = getExchangeSpecification().getExchangeSpecificParametersItem(DSX_SPEC_PARAMS_API_URI);
+        streamingService = new DsxStreamingService(apiURI == null ? DEFAULT_API_URI : (String) apiURI);
+        streamingService.setBeforeConnectionHandler((Runnable) getExchangeSpecification().getExchangeSpecificParametersItem(BEFORE_CONNECTION_HANDLER));
         streamingMarketDataService = new DsxStreamingMarketDataService(streamingService);
     }
 
@@ -56,7 +61,6 @@ public class DsxStreamingExchange extends HitbtcExchange implements StreamingExc
     public ExchangeSpecification getDefaultExchangeSpecification() {
         ExchangeSpecification spec = super.getDefaultExchangeSpecification();
         spec.setShouldLoadRemoteMetaData(false);
-
         return spec;
     }
 
@@ -64,7 +68,9 @@ public class DsxStreamingExchange extends HitbtcExchange implements StreamingExc
     public StreamingMarketDataService getStreamingMarketDataService() {
         return streamingMarketDataService;
     }
-    
+
     @Override
-    public void useCompressedMessages(boolean compressedMessages) { streamingService.useCompressedMessages(compressedMessages); }
+    public void useCompressedMessages(boolean compressedMessages) {
+        streamingService.useCompressedMessages(compressedMessages);
+    }
 }
