@@ -48,7 +48,7 @@ public class DsxSubscriptionHelper {
     }
 
     public static DsxWebSocketSubscriptionMessage createBaseSubscriptionMessage(DsxChannelInfo channelInfo, DsxEventType eventType) {
-        return new DsxWebSocketInstrumentSubscriptionMessage(generateRequestId(), eventType, channelInfo.getInstrument(), channelInfo.getInstrumentType());
+        return new DsxWebSocketInstrumentSubscriptionMessage(generateRequestId(), eventType, channelInfo.getChannel(), channelInfo.getInstrument(), channelInfo.getInstrumentType());
     }
 
     public static DsxChannelInfo parseChannelName(String channelName) {

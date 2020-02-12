@@ -30,16 +30,14 @@ public class DsxStreamingExchange extends DSXExchange implements StreamingExchan
     protected void initServices() {
         super.initServices();
         Object apiURI = getExchangeSpecification().getExchangeSpecificParametersItem(DSX_SPEC_PARAMS_API_URI);
-        streamingService = new DsxStreamingService(apiURI == null ? DEFAULT_API_URI : (String) apiURI);
+        streamingService = createStreamingService(apiURI == null ? DEFAULT_API_URI : (String) apiURI);
         streamingService.setBeforeConnectionHandler((Runnable) getExchangeSpecification().getExchangeSpecificParametersItem(BEFORE_CONNECTION_HANDLER));
         streamingMarketDataService = new DsxStreamingMarketDataService(streamingService);
-        this.streamingService = createStreamingService();
-        this.streamingMarketDataService = new DsxStreamingMarketDataService(streamingService);
-        this.streamingTradeService = new DsxStreamingTradeService(streamingService);
+        streamingTradeService = new DsxStreamingTradeService(streamingService);
     }
 
-    private DsxStreamingService createStreamingService() {
-        DsxStreamingService streamingService = new DsxStreamingService(API_URI, getNonceFactory());
+    private DsxStreamingService createStreamingService(String apiURI) {
+        DsxStreamingService streamingService = new DsxStreamingService(apiURI, getNonceFactory());
         applyStreamingSpecification(getExchangeSpecification(), streamingService);
         if (StringUtils.isNotEmpty(exchangeSpecification.getApiKey())) {
             streamingService.setApiKey(exchangeSpecification.getApiKey());
