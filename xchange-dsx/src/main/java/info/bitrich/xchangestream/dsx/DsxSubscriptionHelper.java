@@ -32,6 +32,7 @@ public class DsxSubscriptionHelper {
         return new DsxWebSocketBookSubscriptionMessage(
                 generateRequestId(),
                 eventType,
+                channelInfo.getChannel(),
                 channelInfo.getInstrument(), channelInfo.getInstrumentType(),
                 getIndexedValue("order book depth limit", args, 1, Integer.class, DEFAULT_LIMIT_VALUE));
     }
@@ -42,12 +43,11 @@ public class DsxSubscriptionHelper {
         if (lastTradeId != null && lastTradeId == 0) {
             lastTradeId = previousDealId;
         }
-        return new DsxWebSocketTradeSubscriptionMessage(generateRequestId(), event, channelInfo.getInstrument(), channelInfo.getInstrumentType(), lastTradeId);
+        return new DsxWebSocketTradeSubscriptionMessage(generateRequestId(), event, channelInfo.getChannel(), channelInfo.getInstrument(), channelInfo.getInstrumentType(), lastTradeId);
     }
 
     public static DsxWebSocketSubscriptionMessage createBaseSubscriptionMessage(DsxChannelInfo channelInfo, DsxEventType eventType) {
-        return new DsxWebSocketSubscriptionMessage(generateRequestId(), eventType, channelInfo.getInstrument(), channelInfo.getInstrumentType()
-        );
+        return new DsxWebSocketSubscriptionMessage(generateRequestId(), eventType, channelInfo.getChannel(), channelInfo.getInstrument(), channelInfo.getInstrumentType());
     }
 
     public static DsxChannelInfo parseChannelName(String channelName) {

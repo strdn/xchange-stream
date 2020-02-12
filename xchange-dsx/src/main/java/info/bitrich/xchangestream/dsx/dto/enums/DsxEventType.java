@@ -10,10 +10,7 @@ import java.util.Arrays;
 public enum DsxEventType {
     heartbeat,
 
-    subscribeBook,
-    subscribeTrade,
-    subscribeTicker,
-
+    subscribe,
     subscribed,
     subscriptionFailed,
 
@@ -21,6 +18,7 @@ public enum DsxEventType {
     unsubscribeTrade,
     unsubscribeTicker,
 
+    unsubscribe,
     unsubscribed,
     unsubscriptionFailed,
 
