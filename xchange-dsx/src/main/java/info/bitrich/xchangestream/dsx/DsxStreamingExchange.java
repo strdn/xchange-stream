@@ -3,12 +3,12 @@ package info.bitrich.xchangestream.dsx;
 import info.bitrich.xchangestream.core.ProductSubscription;
 import info.bitrich.xchangestream.core.StreamingExchange;
 import info.bitrich.xchangestream.core.StreamingMarketDataService;
-import info.bitrich.xchangestream.core.StreamingTradeService;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import org.apache.commons.lang3.StringUtils;
 import org.knowm.xchange.ExchangeSpecification;
 import org.knowm.xchange.dsx.DSXExchange;
+import org.knowm.xchange.exceptions.ExchangeSecurityException;
 
 import static info.bitrich.xchangestream.service.ConnectableService.BEFORE_CONNECTION_HANDLER;
 
@@ -22,6 +22,7 @@ public class DsxStreamingExchange extends DSXExchange implements StreamingExchan
     private DsxStreamingService streamingService;
     private DsxStreamingMarketDataService streamingMarketDataService;
     private DsxStreamingTradeService streamingTradeService;
+    private DsxStreamingAccountService streamingAccountService;
 
     public DsxStreamingExchange() {
     }
@@ -34,6 +35,7 @@ public class DsxStreamingExchange extends DSXExchange implements StreamingExchan
         streamingService.setBeforeConnectionHandler((Runnable) getExchangeSpecification().getExchangeSpecificParametersItem(BEFORE_CONNECTION_HANDLER));
         streamingMarketDataService = new DsxStreamingMarketDataService(streamingService);
         streamingTradeService = new DsxStreamingTradeService(streamingService);
+        streamingAccountService = new DsxStreamingAccountService(streamingService);
     }
 
     private DsxStreamingService createStreamingService(String apiURI) {
@@ -83,12 +85,29 @@ public class DsxStreamingExchange extends DSXExchange implements StreamingExchan
         return streamingMarketDataService;
     }
 
-    @Override
-    public StreamingTradeService getStreamingTradeService() {
-        if (streamingService.isAuthDataProvided()) {
+    public void authorize() {
+        if (!streamingService.isAuthDataProvided()) {
+            throw new ExchangeSecurityException("authenticated data not provided");
+        }
+        if (!streamingService.isAuthorized()) {
             streamingService.authorize();
         }
+    }
+
+    @Override
+    public DsxStreamingTradeService getStreamingTradeService() {
+        if (!streamingService.isAuthDataProvided()) {
+            throw new ExchangeSecurityException("No authentication data provided");
+        }
         return streamingTradeService;
+    }
+
+    @Override
+    public DsxStreamingAccountService getStreamingAccountService() {
+        if (!streamingService.isAuthDataProvided()) {
+            throw new ExchangeSecurityException("No authentication data provided");
+        }
+        return streamingAccountService;
     }
 
     @Override

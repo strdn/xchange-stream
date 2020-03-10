@@ -1,9 +1,10 @@
 package info.bitrich.xchangestream.dsx;
 
 import info.bitrich.xchangestream.core.StreamingTradeService;
-import info.bitrich.xchangestream.dsx.dto.messages.DsxTradeMessage;
 import io.reactivex.Observable;
 import org.knowm.xchange.currency.CurrencyPair;
+import org.knowm.xchange.dsx.dto.trade.ClientDeal;
+import org.knowm.xchange.dsx.dto.trade.DSXOrder;
 import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.knowm.xchange.exceptions.ExchangeSecurityException;
@@ -24,13 +25,14 @@ public class DsxStreamingTradeService implements StreamingTradeService {
 
     @Override
     public Observable<Order> getOrderChanges(CurrencyPair currencyPair, Object... args) {
-        return null;
+        return getAuthenticatedOrders()
+                .map(DsxStreamingMessageAdapter::adaptOrder);
     }
 
 
     public Observable<UserTrade> getUserTrades() {
         return getAuthenticatedTrades()
-                .map(t -> new UserTrade.Builder().build());
+                .map(DsxStreamingMessageAdapter::adaptTrade);
     }
 
     @Override
@@ -39,8 +41,12 @@ public class DsxStreamingTradeService implements StreamingTradeService {
                 .filter(t -> currencyPair.equals(t.getCurrencyPair()));
     }
 
-    public Observable<DsxTradeMessage> getAuthenticatedTrades() {
+    public Observable<ClientDeal> getAuthenticatedTrades() {
         return withAuthenticatedService(DsxStreamingService::getAuthenticatedTrades);
+    }
+
+    public Observable<DSXOrder> getAuthenticatedOrders() {
+        return withAuthenticatedService(DsxStreamingService::getAuthenticatedOrders);
     }
 
     private <T> Observable<T> withAuthenticatedService(Function<DsxStreamingService, Observable<T>> serviceConsumer) {

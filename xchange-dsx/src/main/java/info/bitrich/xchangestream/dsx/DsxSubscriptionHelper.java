@@ -4,6 +4,7 @@ import info.bitrich.xchangestream.dsx.dto.DsxChannelInfo;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxChannel;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxEventType;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxInstrumentType;
+import info.bitrich.xchangestream.dsx.dto.messages.DsxAuthMessage;
 import info.bitrich.xchangestream.dsx.dto.messages.DsxWebSocketBookSubscriptionMessage;
 import info.bitrich.xchangestream.dsx.dto.messages.DsxWebSocketInstrumentSubscriptionMessage;
 import info.bitrich.xchangestream.dsx.dto.messages.DsxWebSocketSubscriptionMessage;
@@ -49,6 +50,18 @@ public class DsxSubscriptionHelper {
 
     public static DsxWebSocketSubscriptionMessage createBaseSubscriptionMessage(DsxChannelInfo channelInfo, DsxEventType eventType) {
         return new DsxWebSocketInstrumentSubscriptionMessage(generateRequestId(), eventType, channelInfo.getChannel(), channelInfo.getInstrument(), channelInfo.getInstrumentType());
+    }
+
+    public static DsxAuthMessage createAuthMessage(Long dealsFrom, String apiKey, String authNonce, String authSig) {
+        return new DsxAuthMessage(
+                generateRequestId(),
+                DsxEventType.AUTHORIZE,
+                DsxChannel.AUTHORIZED,
+                dealsFrom,
+                apiKey,
+                authNonce,
+                authSig
+        );
     }
 
     public static DsxChannelInfo parseChannelName(String channelName) {

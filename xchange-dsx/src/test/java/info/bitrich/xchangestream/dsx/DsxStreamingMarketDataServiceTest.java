@@ -32,7 +32,7 @@ public class DsxStreamingMarketDataServiceTest {
         Assert.assertNotNull(jsonNode);
         DsxOrderbookMessage parsedSnapshot = mapper.readValue(jsonNode.toString(), DsxOrderbookMessage.class);
         DsxOrderBook orderBook = new DsxOrderBook(parsedSnapshot);
-        Assert.assertEquals(DsxEventType.snapshot, parsedSnapshot.getEvent());
+        Assert.assertEquals(DsxEventType.SNAPSHOT, parsedSnapshot.getEvent());
         List<LimitOrder> asks = new ArrayList<>();
         LimitOrder askDeleteAfterUpdate = new LimitOrder(OrderType.ASK, BigDecimal.valueOf(15), CurrencyPair.BTC_USD, "", null,BigDecimal.valueOf(103.5));
         asks.add(askDeleteAfterUpdate);

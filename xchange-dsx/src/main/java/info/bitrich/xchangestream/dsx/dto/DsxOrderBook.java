@@ -52,10 +52,10 @@ public class DsxOrderBook {
 
     public DsxOrderBook toDSXOrderBook(DsxOrderbookMessage message) {
         switch (message.getEvent()) {
-            case snapshot: {
+            case SNAPSHOT: {
                 return message.getTimestamp() < this.getTimestamp() ? this : new DsxOrderBook(message);
             }
-            case update: {
+            case UPDATE: {
                 return this.updateOrderBook(message);
             }
         }

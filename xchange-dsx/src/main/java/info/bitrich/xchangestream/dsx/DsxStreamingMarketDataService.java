@@ -46,7 +46,7 @@ public class DsxStreamingMarketDataService implements StreamingMarketDataService
 
     @Override
     public Observable<OrderBook> getOrderBook(CurrencyPair currencyPair, Object... args) {
-        String channelName = createChannelName(DsxChannel.book, currencyPair, args);
+        String channelName = createChannelName(DsxChannel.BOOK, currencyPair, args);
         final ObjectMapper mapper = StreamingObjectMapperHelper.getObjectMapper();
 
         Observable<JsonNode> jsonNodeObservable = service.subscribeChannel(channelName, args);
@@ -63,7 +63,7 @@ public class DsxStreamingMarketDataService implements StreamingMarketDataService
 
     @Override
     public Observable<Trade> getTrades(CurrencyPair currencyPair, Object... args) {
-        String channelName = createChannelName(DsxChannel.trade, currencyPair, args);
+        String channelName = createChannelName(DsxChannel.TRADE, currencyPair, args);
         final ObjectMapper mapper = StreamingObjectMapperHelper.getObjectMapper();
         Observable<JsonNode> jsonNodeObservable = service.subscribeChannel(channelName, args);
         return jsonNodeObservable
@@ -82,7 +82,7 @@ public class DsxStreamingMarketDataService implements StreamingMarketDataService
 
     @Override
     public Observable<Ticker> getTicker(CurrencyPair currencyPair, Object... args) {
-        String channelName = createChannelName(DsxChannel.ticker, currencyPair, args);
+        String channelName = createChannelName(DsxChannel.TICKER, currencyPair, args);
         final ObjectMapper mapper = StreamingObjectMapperHelper.getObjectMapper();
         Observable<JsonNode> jsonNodeObservable = service.subscribeChannel(channelName);
         return jsonNodeObservable

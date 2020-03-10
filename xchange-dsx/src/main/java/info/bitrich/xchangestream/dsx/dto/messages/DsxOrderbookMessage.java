@@ -39,7 +39,7 @@ public class DsxOrderbookMessage extends InstrumentChannelMessage {
     }
 
     public DsxOrderBook toDsxOrderBook(DsxOrderBook orderbook) {
-        if (getEvent() == DsxEventType.update) {
+        if (getEvent() == DsxEventType.UPDATE) {
             return orderbook.updateOrderBook(this);
         }
         return new DsxOrderBook(this);

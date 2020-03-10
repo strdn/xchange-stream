@@ -2,15 +2,18 @@ package info.bitrich.xchangestream.dsx;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import info.bitrich.xchangestream.dsx.dto.DsxChannelInfo;
+import info.bitrich.xchangestream.dsx.dto.enums.DsxChannel;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxEventType;
 import info.bitrich.xchangestream.dsx.dto.messages.DsxAuthMessage;
-import info.bitrich.xchangestream.dsx.dto.messages.DsxTradeMessage;
+import info.bitrich.xchangestream.dsx.dto.messages.DsxAuthBalanceMessage;
 import info.bitrich.xchangestream.dsx.dto.messages.DsxWebSocketSubscriptionMessage;
 import info.bitrich.xchangestream.service.netty.JsonNettyStreamingService;
 import io.netty.handler.codec.http.websocketx.extensions.WebSocketClientExtensionHandler;
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 import org.apache.commons.lang3.StringUtils;
+import org.knowm.xchange.dsx.dto.trade.ClientDeal;
+import org.knowm.xchange.dsx.dto.trade.DSXOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import si.mazi.rescu.SynchronizedValueFactory;
@@ -22,9 +25,12 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static info.bitrich.xchangestream.dsx.DsxStreamingMessageAdapter.adaptBalance;
+import static info.bitrich.xchangestream.dsx.DsxStreamingMessageAdapter.adaptBalances;
 import static info.bitrich.xchangestream.dsx.DsxSubscriptionHelper.CHANNEL_DELIMITER;
 import static org.knowm.xchange.service.BaseParamsDigest.HMAC_SHA_512;
 
@@ -43,7 +49,27 @@ public class DsxStreamingService extends JsonNettyStreamingService {
     private final Map<Long, DsxChannelInfo> requests = new ConcurrentHashMap<>();
     private final Map<String, Long> lastTradeIds = new ConcurrentHashMap<>();
 
-    private final PublishSubject<DsxTradeMessage> subjectTrade = PublishSubject.create();
+    private final PublishSubject<ClientDeal> subjectTrade = PublishSubject.create();
+    private final PublishSubject<DsxAuthBalanceMessage> subjectBalance = PublishSubject.create();
+    private final PublishSubject<DSXOrder> subjectOrder = PublishSubject.create();
+
+    private final SynchronizedValueFactory<Long> nonceFactory;
+
+    private String apiKey;
+    private String apiSecret;
+    private boolean isAuthorized = false;
+
+    public Observable<ClientDeal> getAuthenticatedTrades() {
+        return subjectTrade.share();
+    }
+
+    public Observable<DsxAuthBalanceMessage> getAuthenticatedBalances() {
+        return subjectBalance.share();
+    }
+
+    public Observable<DSXOrder> getAuthenticatedOrders() {
+        return subjectOrder.share();
+    }
 
     public DsxStreamingService(String apiUrl, SynchronizedValueFactory<Long> nonceFactory) {
         super(apiUrl, Integer.MAX_VALUE);
@@ -57,6 +83,22 @@ public class DsxStreamingService extends JsonNettyStreamingService {
 
     public void setLastTradeId(String channelName, long lastTradeId) {
         this.lastTradeIds.put(channelName, lastTradeId);
+    }
+
+    void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
+    }
+
+    void setApiSecret(String apiSecret) {
+        this.apiSecret = apiSecret;
+    }
+
+    public boolean isAuthorized() {
+        return isAuthorized;
+    }
+
+    boolean isAuthDataProvided() {
+        return StringUtils.isNotEmpty(apiKey) && StringUtils.isNotEmpty(apiSecret);
     }
 
     @Override
@@ -76,25 +118,33 @@ public class DsxStreamingService extends JsonNettyStreamingService {
             DsxEventType dsxEvent = DsxEventType.getEvent(eventName);
             if (dsxEvent != null) {
                 switch (dsxEvent) {
-                    case authorize:
+                    case AUTHORIZE:
                         LOG.debug("Message received: {}", message.toString());
                         processAuthorizeResponse(message);
                         break;
-                    case snapshot:
-                    case update:
+                    case SNAPSHOT:
+                        LOG.debug("Snapshot message received: {}", message.toString());
+                        break;
+                    case UPDATE:
                         LOG.debug("Message received: {}", message.toString());
                         super.handleMessage(message);
                         break;
-                    case heartbeat:
+                    case HEARTBEAT:
                         LOG.debug("Heartbeat has been received");
                         break;
-                    case subscribed:
-                    case unsubscribed:
-                    case unsubscriptionFailed:
-                    case subscriptionFailed:
+                    case SUBSCRIBED:
+                    case UNSUBSCRIBED:
+                    case UNSUBSCRIPTION_FAILED:
+                    case SUBSCRIPTION_FAILED:
                         processRequestId(message, dsxEvent);
                         break;
                     default:
+                }
+            } else {
+                String channelName = message.get(JSON_CHANNEL).asText();
+                DsxChannel channel = DsxChannel.getChannel(channelName);
+                if (DsxChannel.AUTHORIZED == channel) {
+                    processAuthorizedMessage(message);
                 }
             }
         } else {
@@ -114,18 +164,11 @@ public class DsxStreamingService extends JsonNettyStreamingService {
         LOG.warn("Unknown request has been successfully processed. Result: '{}'. Message: {}", event, message.toString());
     }
 
-    private void processAuthorizeResponse(JsonNode message) {
-        LOG.info("Process authorize msg {}", message);
-        if (message.get(JSON_ERROR_CODE) == null) {
-            isAuthorized = true;
-        }
-    }
-
     @Override
     public String getSubscribeMessage(String channelName, Object... args) throws IOException {
         DsxChannelInfo channelInfo = DsxSubscriptionHelper.parseChannelName(channelName);
         channelInfo.setLastTradeId(lastTradeIds.computeIfAbsent(channelName, chName -> 0L));
-        DsxWebSocketSubscriptionMessage message = channelInfo.getChannel().subscriptionMessageCreator.apply(channelInfo, DsxEventType.subscribe, args);
+        DsxWebSocketSubscriptionMessage message = channelInfo.getChannel().subscriptionMessageCreator.apply(channelInfo, DsxEventType.SUBSCRIBE, args);
         requests.put(message.getRid(), channelInfo);
         LOG.info("Subscription message for channel {} has been generated. RequestId {}", channelName, message.getRid());
         return objectMapper.writeValueAsString(message);
@@ -134,34 +177,107 @@ public class DsxStreamingService extends JsonNettyStreamingService {
     @Override
     public String getUnsubscribeMessage(String channelName) throws IOException {
         DsxChannelInfo channelInfo = DsxSubscriptionHelper.parseChannelName(channelName);
-        DsxWebSocketSubscriptionMessage message = DsxSubscriptionHelper.createBaseSubscriptionMessage(channelInfo, DsxEventType.unsubscribe);
+        DsxWebSocketSubscriptionMessage message = DsxSubscriptionHelper.createBaseSubscriptionMessage(channelInfo, DsxEventType.UNSUBSCRIBE);
         requests.put(message.getRid(), channelInfo);
         LOG.info("Unsubscription message for channel {} has been generated. RequestId {}", channelName, message.getRid());
         return objectMapper.writeValueAsString(message);
     }
 
-    public Observable<DsxTradeMessage> getAuthenticatedTrades() {
-        return subjectTrade.share();
+    private enum AuthorizedChannelDataType {
+        BALANCE,
+        ORDER,
+        TRADE;
+
+        public static AuthorizedChannelDataType getEvent(String type) {
+            return Arrays.stream(AuthorizedChannelDataType.values())
+                    .filter(e -> StringUtils.equalsIgnoreCase(type, e.name()))
+                    .findFirst()
+                    .orElse(null);
+        }
     }
 
-    boolean isAuthDataProvided() {
-        return StringUtils.isNotEmpty(apiKey) && StringUtils.isNotEmpty(apiSecret);
+    private void processAuthorizedMessage(JsonNode message) {
+        AuthorizedChannelDataType infoType = AuthorizedChannelDataType.getEvent(message.get("infoType").asText());
+        JsonNode payload = message.get("rawPayload");
+
+        switch (infoType) {
+            case BALANCE:
+                processAuthorizedMessageBalance(payload);
+                break;
+            case ORDER:
+                processAuthorizedMessageOrder(payload);
+                break;
+            case TRADE:
+                processAuthorizedMessageTrade(payload);
+                break;
+            default:
+                break;
+        }
     }
 
-    private String apiKey;
-    private String apiSecret;
-
-    private boolean isAuthorized = false;
-
-    void setApiKey(String apiKey) {
-        this.apiKey = apiKey;
+    private void processAuthorizedMessageBalance(JsonNode rawPayload) {
+        String eventName = rawPayload.get(JSON_EVENT).asText();
+        DsxEventType dsxEvent = DsxEventType.getEvent(eventName);
+        if (dsxEvent != null) {
+            switch (dsxEvent) {
+                case SNAPSHOT:
+                    adaptBalances(rawPayload.get("balances")).forEach(subjectBalance::onNext);
+                    break;
+                case UPDATE:
+                    DsxAuthBalanceMessage balance = adaptBalance(rawPayload.get("balances"));
+                    if (balance != null)
+                        subjectBalance.onNext(balance);
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
-    void setApiSecret(String apiSecret) {
-        this.apiSecret = apiSecret;
+    private void processAuthorizedMessageOrder(JsonNode rawPayload) {
+        String eventName = rawPayload.get(JSON_EVENT).asText();
+        DsxEventType dsxEvent = DsxEventType.getEvent(eventName);
+        if (dsxEvent != null) {
+            switch (dsxEvent) {
+                case SNAPSHOT:
+                    DsxStreamingMessageAdapter.adaptOrders(rawPayload.get("orders")).forEach(subjectOrder::onNext);
+                    break;
+                case UPDATE:
+                    DSXOrder order = DsxStreamingMessageAdapter.adaptOrder(rawPayload.get("orders"));
+                    if (order != null)
+                        subjectOrder.onNext(order);
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
-    private final SynchronizedValueFactory<Long> nonceFactory;
+    private void processAuthorizedMessageTrade(JsonNode rawPayload) {
+        String eventName = rawPayload.get(JSON_EVENT).asText();
+        DsxEventType dsxEvent = DsxEventType.getEvent(eventName);
+        if (dsxEvent != null) {
+            switch (dsxEvent) {
+                case SNAPSHOT:
+                    DsxStreamingMessageAdapter.adaptTrades(rawPayload.get("trades")).forEach(subjectTrade::onNext);
+                    break;
+                case UPDATE:
+                    ClientDeal trade = DsxStreamingMessageAdapter.adaptTrade(rawPayload.get("trades"));
+                    if (trade != null)
+                        subjectTrade.onNext(trade);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    private void processAuthorizeResponse(JsonNode message) {
+        LOG.debug("Process authorize msg {}", message);
+        if (message.get(JSON_ERROR_CODE) == null) {
+            isAuthorized = true;
+        }
+    }
 
     public void authorize() {
         long nonce = nonceFactory.createValue();
@@ -174,8 +290,7 @@ public class DsxStreamingService extends JsonNettyStreamingService {
             byte[] result = macEncoder.doFinal(payload.getBytes(StandardCharsets.UTF_8));
             signature = DatatypeConverter.printHexBinary(result);
 
-            DsxAuthMessage message = new DsxAuthMessage(
-                    DsxEventType.authorize, apiKey, String.valueOf(nonce), signature.toLowerCase());
+            DsxAuthMessage message = DsxSubscriptionHelper.createAuthMessage(0L, apiKey, String.valueOf(nonce), signature.toLowerCase());
             sendObjectMessage(message);
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
             LOG.error("auth. Sign failed error={}", e.getMessage());

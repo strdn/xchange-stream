@@ -8,23 +8,23 @@ import java.util.Arrays;
  * @author rimalon
  */
 public enum DsxEventType {
-    heartbeat,
+    HEARTBEAT,
 
-    subscribe,
-    subscribed,
-    subscriptionFailed,
+    SUBSCRIBE,
+    SUBSCRIBED,
+    SUBSCRIPTION_FAILED,
 
-    unsubscribeBook,
-    unsubscribeTrade,
-    unsubscribeTicker,
+    UNSUBSCRIBE_BOOK,
+    UNSUBSCRIBE_TRADE,
+    UNSUBSCRIBE_TICKER,
 
-    unsubscribe,
-    unsubscribed,
-    unsubscriptionFailed,
+    UNSUBSCRIBE,
+    UNSUBSCRIBED,
+    UNSUBSCRIPTION_FAILED,
 
-    authorize,
-    snapshot,
-    update;
+    AUTHORIZE,
+    SNAPSHOT,
+    UPDATE;
 
     public static DsxEventType getEvent(String event) {
         return Arrays.stream(DsxEventType.values())
