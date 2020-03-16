@@ -6,6 +6,7 @@ import info.bitrich.xchangestream.dsx.dto.enums.DsxChannel;
 import info.bitrich.xchangestream.dsx.dto.enums.DsxEventType;
 import info.bitrich.xchangestream.dsx.dto.messages.DsxAuthMessage;
 import info.bitrich.xchangestream.dsx.dto.messages.DsxAuthBalanceMessage;
+import info.bitrich.xchangestream.dsx.dto.messages.DsxAuthOrderMessage;
 import info.bitrich.xchangestream.dsx.dto.messages.DsxWebSocketSubscriptionMessage;
 import info.bitrich.xchangestream.service.netty.JsonNettyStreamingService;
 import io.netty.handler.codec.http.websocketx.extensions.WebSocketClientExtensionHandler;
@@ -13,7 +14,6 @@ import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 import org.apache.commons.lang3.StringUtils;
 import org.knowm.xchange.dsx.dto.trade.ClientDeal;
-import org.knowm.xchange.dsx.dto.trade.DSXOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import si.mazi.rescu.SynchronizedValueFactory;
@@ -51,7 +51,7 @@ public class DsxStreamingService extends JsonNettyStreamingService {
 
     private final PublishSubject<ClientDeal> subjectTrade = PublishSubject.create();
     private final PublishSubject<DsxAuthBalanceMessage> subjectBalance = PublishSubject.create();
-    private final PublishSubject<DSXOrder> subjectOrder = PublishSubject.create();
+    private final PublishSubject<DsxAuthOrderMessage> subjectOrder = PublishSubject.create();
 
     private final SynchronizedValueFactory<Long> nonceFactory;
 
@@ -67,7 +67,7 @@ public class DsxStreamingService extends JsonNettyStreamingService {
         return subjectBalance.share();
     }
 
-    public Observable<DSXOrder> getAuthenticatedOrders() {
+    public Observable<DsxAuthOrderMessage> getAuthenticatedOrders() {
         return subjectOrder.share();
     }
 
@@ -243,7 +243,7 @@ public class DsxStreamingService extends JsonNettyStreamingService {
                     DsxStreamingMessageAdapter.adaptOrders(rawPayload.get("orders")).forEach(subjectOrder::onNext);
                     break;
                 case UPDATE:
-                    DSXOrder order = DsxStreamingMessageAdapter.adaptOrder(rawPayload.get("orders"));
+                    DsxAuthOrderMessage order = DsxStreamingMessageAdapter.adaptOrder(rawPayload.get("orders"));
                     if (order != null)
                         subjectOrder.onNext(order);
                     break;

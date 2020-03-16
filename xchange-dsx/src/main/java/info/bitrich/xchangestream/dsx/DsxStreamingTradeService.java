@@ -1,10 +1,10 @@
 package info.bitrich.xchangestream.dsx;
 
 import info.bitrich.xchangestream.core.StreamingTradeService;
+import info.bitrich.xchangestream.dsx.dto.messages.DsxAuthOrderMessage;
 import io.reactivex.Observable;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dsx.dto.trade.ClientDeal;
-import org.knowm.xchange.dsx.dto.trade.DSXOrder;
 import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.trade.UserTrade;
 import org.knowm.xchange.exceptions.ExchangeSecurityException;
@@ -45,7 +45,7 @@ public class DsxStreamingTradeService implements StreamingTradeService {
         return withAuthenticatedService(DsxStreamingService::getAuthenticatedTrades);
     }
 
-    public Observable<DSXOrder> getAuthenticatedOrders() {
+    public Observable<DsxAuthOrderMessage> getAuthenticatedOrders() {
         return withAuthenticatedService(DsxStreamingService::getAuthenticatedOrders);
     }
 

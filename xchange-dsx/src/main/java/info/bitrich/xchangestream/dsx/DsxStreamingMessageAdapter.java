@@ -2,9 +2,10 @@ package info.bitrich.xchangestream.dsx;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import info.bitrich.xchangestream.dsx.dto.messages.DsxAuthBalanceMessage;
+import info.bitrich.xchangestream.dsx.dto.messages.DsxAuthOrderMessage;
 import io.reactivex.annotations.Nullable;
 import org.knowm.xchange.currency.Currency;
-import org.knowm.xchange.currency.CurrencyPair;
+import org.knowm.xchange.dsx.DSXAdapters;
 import org.knowm.xchange.dsx.dto.trade.ClientDeal;
 import org.knowm.xchange.dsx.dto.trade.DSXOrder;
 import org.knowm.xchange.dto.Order;
@@ -58,14 +59,14 @@ public class DsxStreamingMessageAdapter {
 
     static Balance adaptBalance(DsxAuthBalanceMessage authBalance) {
         return new Balance(
-                Currency.getInstance(authBalance.getCurrency()),
+                DSXAdapters.adaptCurrency(authBalance.getCurrency()),
                 authBalance.getTotal(),
                 authBalance.getAvailable()
         );
     }
 
 
-    static Stream<DSXOrder> adaptOrders(JsonNode orders) {
+    static Stream<DsxAuthOrderMessage> adaptOrders(JsonNode orders) {
         Iterable<JsonNode> iterator = () -> orders.iterator();
         return stream(iterator.spliterator(), false)
                 .map(DsxStreamingMessageAdapter::createOrderMessage)
@@ -73,25 +74,29 @@ public class DsxStreamingMessageAdapter {
     }
 
     @Nullable
-    static DSXOrder adaptOrder(JsonNode order) {
+    static DsxAuthOrderMessage adaptOrder(JsonNode order) {
         JsonNode orderObject = order.get(0);
         if (orderObject == null) {
             return null;
         }
-        DSXOrder aom = createOrderMessage(orderObject);
+        DsxAuthOrderMessage aom = createOrderMessage(orderObject);
         LOG.debug("New order: {}", aom);
         return aom;
     }
 
-    static Order adaptOrder(DSXOrder authOrder) {
-
+    static Order adaptOrder(DsxAuthOrderMessage authOrder) {
         return authOrder.getOrderType().equals(DSXOrder.OrderType.limit) ?
                 new LimitOrder(
-                    authOrder.getType().equals(DSXOrder.Type.buy) ? Order.OrderType.ASK : Order.OrderType.BID,
-                    authOrder.getVolume(), new CurrencyPair(authOrder.getPair()), null, DateUtils.fromMillisUtc(Long.parseLong(authOrder.getTimestampCreated())),
-                    authOrder.getRate())  :
+                        authOrder.getType().equals(DSXOrder.Type.buy) ? Order.OrderType.ASK : Order.OrderType.BID,
+                        authOrder.getVolume(),
+                        DSXAdapters.adaptCurrencyPair(authOrder.getPair()),
+                        Long.toString(authOrder.getNumber()),
+                        DateUtils.fromMillisUtc(Long.parseLong(authOrder.getTimestampCreated())),
+                        authOrder.getRate()
+                ) :
                 new MarketOrder(authOrder.getType().equals(DSXOrder.Type.buy) ? Order.OrderType.ASK : Order.OrderType.BID,
-                        authOrder.getVolume(), new CurrencyPair(authOrder.getPair()));
+                        authOrder.getVolume(),
+                        DSXAdapters.adaptCurrencyPair(authOrder.getPair()));
     }
 
     //trades
@@ -115,7 +120,7 @@ public class DsxStreamingMessageAdapter {
 
     static UserTrade adaptTrade(ClientDeal tradeMessage) {
         return new UserTrade.Builder()
-                .currencyPair(new CurrencyPair(tradeMessage.getPair()))
+                .currencyPair(DSXAdapters.adaptCurrencyPair(tradeMessage.getPair()))
                 .feeAmount(tradeMessage.getCommission())
                 .feeCurrency(new Currency(tradeMessage.getCommissionCurrency()))
                 .id(Long.toString(tradeMessage.getNumber()))
@@ -123,7 +128,7 @@ public class DsxStreamingMessageAdapter {
                 .originalAmount(tradeMessage.getVolume())
                 .price(tradeMessage.getRate())
                 .timestamp(DateUtils.fromMillisUtc(tradeMessage.getTimestamp()))
-                .type(tradeMessage.getType().equals(DSXOrder.Type.buy) ? ASK : BID)
+                .type(tradeMessage.getType().equals(DSXOrder.Type.buy.name()) ? ASK : BID)
                 .build();
     }
 
@@ -149,15 +154,15 @@ public class DsxStreamingMessageAdapter {
         BigDecimal volume = trade.get("volume").decimalValue();
         BigDecimal rate = trade.get("rate").decimalValue();
         long orderId = trade.get("orderId").asLong();
-        long timestamp = trade.get("timestamp").asLong();
+        long timestamp = trade.get("timestamp").asLong() * 1000;
         BigDecimal commission = trade.get("commission").decimalValue();
         String commissionCurrency = trade.get("commissionCurrency").asText();
 
         return new ClientDeal(number, pair, type.toString(), volume, rate, orderId, timestamp, commission, commissionCurrency);
     }
 
-    private static DSXOrder createOrderMessage(JsonNode order) {
-
+    private static DsxAuthOrderMessage createOrderMessage(JsonNode order) {
+        Long number = order.get("number").asLong();
         String pair = order.get("pair").asText();
         DSXOrder.Type type = DSXOrder.Type.valueOf(order.get("type").asText().toLowerCase());
         BigDecimal volume = order.get("volume").decimalValue();
@@ -165,8 +170,8 @@ public class DsxStreamingMessageAdapter {
         BigDecimal rate = order.get("rate").decimalValue();
         int status = order.get("status").asInt();
         DSXOrder.OrderType orderType = DSXOrder.OrderType.valueOf(order.get("orderType").asText().toLowerCase());
-        String timestampCreated = order.get("timestampCreated").asText();
+        long timestampCreated = order.get("timestampCreated").asLong() * 1000;
 
-        return new DSXOrder(pair, type, volume, remainingVolume, rate, status, orderType, timestampCreated);
+        return new DsxAuthOrderMessage(number, pair, type, volume, remainingVolume, rate, status, orderType, Long.toString(timestampCreated));
     }
 }
